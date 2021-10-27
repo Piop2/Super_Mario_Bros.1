@@ -17,7 +17,7 @@ class Map:
     def load(cls, path):
         with open(path, 'r') as f:
             map_data = json.load(f)
-        return Map(map_data["map"], map_data["worldType"]), map_data["startAt"]
+        return Map(map_data["map"], map_data["worldType"]), map_data["cameraX"], map_data["mapSize"]
 
     def render(self, surf, tiles, camera_x):
         surf.fill(MAP_BACKGROUND_COLOR[self.world_type])
