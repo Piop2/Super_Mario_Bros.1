@@ -2,7 +2,10 @@ import pygame
 import json
 
 MAP_BACKGROUND_COLOR = {
-    "OverWorld" : (92, 148, 252)
+    "OverWorld" : (92, 148, 252),
+    "UnderGround" : (0, 0, 0),
+    "UnderWater" : (92, 148, 252),
+    "Castle" : (0, 0, 0)
 }
 
 def str_to_turple(s):
