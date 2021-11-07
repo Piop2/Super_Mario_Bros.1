@@ -92,8 +92,8 @@ class Map:
                     except IndexError:
                         offset_pos = (0, 0)
 
-                    if tile_num == 30:
-                        item_box_img = clip(tiles[tile_type][30], box_ani_num * 48 + box_ani_num, 0, 48, 48)
+                    if tile_num == 100:
+                        item_box_img = clip(tiles[tile_type][100], box_ani_num * 48 + box_ani_num, 0, 48, 48)
 
                         surf.blit(item_box_img, (tile_pos[0] * 48 - camera_x + offset_pos[0],
                                                                tile_pos[1] * 48 + offset_pos[1]))
