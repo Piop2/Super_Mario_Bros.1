@@ -1,6 +1,7 @@
 import pygame
 import json
 from .core_fuc import *
+from.animation import Animation
 
 MAP_BACKGROUND_COLOR = {
     "OverWorld" : (92, 148, 252),
@@ -11,7 +12,6 @@ MAP_BACKGROUND_COLOR = {
 
 def str_to_turple(s):
     return tuple([int(v) for v in s.split('.')])
-
 
 class Level:
     def __init__(self, level_data, maps):
@@ -42,14 +42,22 @@ class Level:
     def get_start_data(self):
         return self.maps[self.map_name].camera_x, self.maps[self.map_name].map_size
 
-    def render(self, surf, dt, tiles, camera_x):
-        self.maps[self.map_name].render(surf, tiles, camera_x)
+    def play_box(self, dt):
+        self.maps[self.map_name].play_box(dt)
         return
 
+    def render(self, surf, tiles, camera_x):
+        self.maps[self.map_name].render(surf, tiles, camera_x)
+        return
 
 class Map:
     def __init__(self, map_data):
         self.map_data = map_data
+
+        self.box_ani = Animation((None, None, None, None), (45, 15, 15, 15))
+
+    def play_box(self, dt):
+        self.box_ani.play(dt)
 
     @property
     def map_layers(self):
@@ -70,11 +78,25 @@ class Map:
     def render(self, surf, tiles, camera_x):
         surf.fill(MAP_BACKGROUND_COLOR[self.map_type])
 
+        box_ani_num = self.box_ani.layer
+
         for n, layer in enumerate(self.map_layers):
             for tile in layer:
                 tile_pos = str_to_turple(tile)
                 if camera_x -48 <= tile_pos[0] * 48 <= camera_x + 272 and - 48 <= tile_pos[1] * 48 <= 240:
-
                     tile_type = layer[tile][0]
                     tile_num = layer[tile][1]
-                    surf.blit(tiles[tile_type][tile_num], (tile_pos[0] * 48 - camera_x, tile_pos[1] * 48))
+
+                    try:
+                        offset_pos = layer[tile][2]
+                    except IndexError:
+                        offset_pos = (0, 0)
+
+                    if tile_num == 30:
+                        item_box_img = clip(tiles[tile_type][30], box_ani_num * 48 + box_ani_num, 0, 48, 48)
+
+                        surf.blit(item_box_img, (tile_pos[0] * 48 - camera_x + offset_pos[0],
+                                                               tile_pos[1] * 48 + offset_pos[1]))
+                    else:
+                        surf.blit(tiles[tile_type][tile_num], (tile_pos[0] * 48 - camera_x + offset_pos[0],
+                                                           tile_pos[1] * 48 + offset_pos[1]))

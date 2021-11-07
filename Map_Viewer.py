@@ -35,9 +35,11 @@ while running:
     if camera_x >= map_size * 16 - 256:
         camera_x = map_size * 16 - 256
 
+    test_level.play_box(dt)
+
     ### RENDER ###
     # MAP
-    test_level.render(screen, dt, tile_data, camera_x)
+    test_level.render(screen, tile_data, camera_x)
 
 
     ### EVENT ###
