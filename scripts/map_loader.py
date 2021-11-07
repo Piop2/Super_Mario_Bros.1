@@ -83,7 +83,7 @@ class Map:
         for n, layer in enumerate(self.map_layers):
             for tile in layer:
                 tile_pos = str_to_turple(tile)
-                if camera_x -48 <= tile_pos[0] * 48 <= camera_x + 272 and - 48 <= tile_pos[1] * 48 <= 240:
+                if camera_x - 48 <= tile_pos[0] * 48 <= camera_x + 816:
                     tile_type = layer[tile][0]
                     tile_num = layer[tile][1]
 
