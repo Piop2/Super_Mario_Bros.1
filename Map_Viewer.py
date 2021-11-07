@@ -4,7 +4,12 @@ from scripts.map_loader import *
 
 pygame.init()
 WINDOW_SIZE = (768, 720)
-screen = pygame.display.set_mode(WINDOW_SIZE)
+# screen = pygame.display.set_mode(WINDOW_SIZE)
+
+monitor_size = [pygame.display.Info().current_w, pygame.display.Info().current_h]
+screen = pygame.display.set_mode(monitor_size, pygame.FULLSCREEN)
+game_screen = pygame.Surface(WINDOW_SIZE)
+
 pygame.display.set_caption("Map Viewer")
 clock = pygame.time.Clock()
 
@@ -26,6 +31,15 @@ running = True
 while running:
     dt = clock.tick(60)
 
+    ### RENDER ###
+    # MAP
+    test_level.render(game_screen, tile_data, camera_x)
+
+    screen.fill((0, 0, 0))
+    screen.blit(game_screen, ((monitor_size[0] / 2) - (WINDOW_SIZE[0] / 2), (monitor_size[1] / 2) - (WINDOW_SIZE[1] / 2)))
+
+
+
     if right:
         camera_x += 16
     if left:
@@ -38,17 +52,14 @@ while running:
 
     test_level.play_box(dt)
 
-    ### RENDER ###
-    # MAP
-    test_level.render(screen, tile_data, camera_x)
-
-
     ### EVENT ###
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
         if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                running = False
             if event.key == pygame.K_RIGHT:
                 right = True
             if event.key == pygame.K_LEFT:
