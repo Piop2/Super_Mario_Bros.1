@@ -8,14 +8,22 @@ screen = pygame.display.set_mode((WINDOW_SIZE[0] * 3, WINDOW_SIZE[1] * 3))
 pygame.display.set_caption("Map Viewer")
 clock = pygame.time.Clock()
 
-test_map, camera_x, map_size = Map.load('data/maps/1-1_OverWorld.json')
+
+tile_data = {}
+for num, tile_style in enumerate(['OverWorld']):
+    tiles, _ = load_tiles("data/images/tilesets/OverWorld")
+    tile_data[num] = tiles
+
+
+test_level = Level.load('data/maps/debug')
+camera_x, map_size = test_level.get_start_data()
 
 right = False
 left = False
 
 running = True
 while running:
-    clock.tick(60)
+    dt = clock.tick(60)
 
     if right:
         camera_x += 4
@@ -27,9 +35,12 @@ while running:
     if camera_x >= map_size * 16 - 256:
         camera_x = map_size * 16 - 256
 
-    test_map.render(screen, test, camera_x)
+    ### RENDER ###
+    # MAP
+    test_level.render(screen, dt, tile_data, camera_x)
 
-    screen.blit(pygame.transform.scale(screen, (WINDOW_SIZE[0] * 3, WINDOW_SIZE[1] * 3)), (0, 0))
+
+    ### EVENT ###
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
