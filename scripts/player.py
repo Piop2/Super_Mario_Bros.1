@@ -4,18 +4,20 @@ from .animation import *
 
 
 class Mario:
-    def __init__(self, pos):
+    def __init__(self):
         self.ani = {
             "big": {
             },
             "small": {
                 "idle": load_img("data/images/character/small_idle/img.png"),
-                "jump": load_img("data/images/character/small_jump/img.png")
+                "jump": load_img("data/images/character/small_jump/img.png"),
+                "walk": Animation(*load_animation("data/images/character/small_walk")),
+                "run": Animation(*load_animation("data/images/character/small_walk"), speed=2)
             }
         }
 
         self.status = ["small", "idle"]
-        self.pos = pos
+        self.pos = [0, 0]
         self.direction = 1
 
         self.rect = None
@@ -42,6 +44,14 @@ class Mario:
         self.rect.top = self.pos[1]
         return self.rect
 
+    def play_ani(self, dt):
+        try:
+            self.ani[self.status[0]][self.status[1]].play(dt)
+        except:
+            pass
+        return
+
     def render(self, surf):
-        surf.blit(self.get_status_img(), self.pos)
+        img = pygame.transform.flip(self.get_status_img(), True, False) if self.direction < 0 else self.get_status_img()
+        surf.blit(img, self.pos)
         return
