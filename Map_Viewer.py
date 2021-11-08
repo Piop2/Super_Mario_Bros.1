@@ -3,11 +3,9 @@ from scripts.tile import *
 from scripts.map_loader import *
 
 pygame.init()
-WINDOW_SIZE = (768, 720)
-# screen = pygame.display.set_mode(WINDOW_SIZE)
-
 monitor_size = [pygame.display.Info().current_w, pygame.display.Info().current_h]
 screen = pygame.display.set_mode(monitor_size, pygame.FULLSCREEN)
+WINDOW_SIZE = (768, 720)
 game_screen = pygame.Surface(WINDOW_SIZE)
 
 pygame.display.set_caption("Map Viewer")
