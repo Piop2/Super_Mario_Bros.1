@@ -122,7 +122,7 @@ def run_level(level):
 
         mario.play_ani(dt)
 
-        if gravity_acc <= 0: gravity_acc = 10 - jump
+        if gravity_acc <= 1: gravity_acc = 1
         mario_move[1] += jump + gravity_acc if not bounce else gravity_acc
         rect, on_block, touch_ceiling = move(mario.rect, mario_move, test_level.get_rects(camera_x))
         mario.pos = [rect.x, rect.y]
@@ -136,8 +136,8 @@ def run_level(level):
         if mario.pos[0] <= 0:
             mario.pos[0] = 0
 
-        if jump == 0 and gravity_acc <= 1:
-            on_block = True
+        # if jump == 0 and gravity_acc <= 1:
+        #     on_block = True
 
 
 
