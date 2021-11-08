@@ -40,11 +40,14 @@ class Level:
         return Level(level_data, maps)
 
     def get_start_data(self):
-        return self.maps[self.map_name].camera_x, self.maps[self.map_name].map_size
+        return self.maps[self.map_name].camera_x, self.maps[self.map_name].map_size, self.maps[self.map_name].start_at
 
     def play_box(self, dt):
         self.maps[self.map_name].play_box(dt)
         return
+
+    def get_rects(self, camera_x):
+        return self.maps[self.map_name].get_rects(camera_x)
 
     def render(self, surf, tiles, camera_x):
         self.maps[self.map_name].render(surf, tiles, camera_x)
@@ -58,6 +61,10 @@ class Map:
 
     def play_box(self, dt):
         self.box_ani.play(dt)
+
+    @property
+    def start_at(self):
+        return self.map_data["startAt"]
 
     @property
     def map_layers(self):
@@ -75,12 +82,21 @@ class Map:
     def map_size(self):
         return self.map_data["mapSize"]
 
+    def get_rects(self, camera_x):
+        rects = []
+        for tile in self.map_layers[1]:
+            tile_pos = str_to_turple(tile)
+            if camera_x - 48 <= tile_pos[0] * 48 <= camera_x + 816:
+                rect = pygame.Rect(tile_pos[0] * 48 - camera_x, tile_pos[1] * 48, 48, 48)
+                rects.append(rect)
+        return rects
+
     def render(self, surf, tiles, camera_x):
         surf.fill(MAP_BACKGROUND_COLOR[self.map_type])
 
         box_ani_num = self.box_ani.layer
 
-        for n, layer in enumerate(self.map_layers):
+        for layer in self.map_layers:
             for tile in layer:
                 tile_pos = str_to_turple(tile)
                 if camera_x - 48 <= tile_pos[0] * 48 <= camera_x + 816:

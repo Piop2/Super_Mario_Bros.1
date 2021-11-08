@@ -1,7 +1,7 @@
 {
   "worldType": "OverWorld",
   "cameraX": 8,
-  "startAt": null,
+  "startAt": [0, 0],
   "mapSize": 210,
   "map": [
     {

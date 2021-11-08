@@ -23,8 +23,10 @@ class Animation:
             if self.frame >= self.data[self.layer]:
                 self._layer += 1
                 self.frame = 0
-                if self._layer >= len(self.imgs):
+                if self.layer >= len(self.imgs):
                     self._layer = 0
             return
 
+    def get_img(self):
+        return self.imgs[self.layer]
 
