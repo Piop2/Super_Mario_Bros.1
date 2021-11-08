@@ -30,26 +30,29 @@ def collision_test(rect,tiles):
     return collisions
 
 def move(rect,movement,tiles): # movement = [5,2]
+    up = False
+    down = False
+    right = False
+    left = False
     rect.x += movement[0]
     collisions = collision_test(rect,tiles)
     for tile in collisions:
         if movement[0] > 0:
             rect.right = tile.left
+            right = True
         if movement[0] < 0:
             rect.left = tile.right
+            left = True
     rect.y += movement[1]
     collisions = collision_test(rect,tiles)
-
-    on_block = False
-    touch_ceiling = False
     for tile in collisions:
         if movement[1] + 10 >= 0:
             rect.bottom = tile.top
-            on_block = True
+            down = True
         if movement[1] < 0:
             rect.top = tile.bottom
-            touch_ceiling = True
-    return rect, on_block, touch_ceiling
+            up = True
+    return rect, up, down, right, left
 
 
 def run_level(level):
@@ -124,7 +127,7 @@ def run_level(level):
 
         if gravity_acc <= 1: gravity_acc = 1
         mario_move[1] += jump + gravity_acc if not bounce else gravity_acc
-        rect, on_block, touch_ceiling = move(mario.rect, mario_move, test_level.get_rects(camera_x))
+        rect, touch_ceiling, on_block, _, _ = move(mario.rect, mario_move, test_level.get_rects(camera_x))
         mario.pos = [rect.x, rect.y]
 
         if on_block:
