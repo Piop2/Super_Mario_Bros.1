@@ -40,7 +40,7 @@ def move(rect,movement,tiles): # movement = [5,2]
     block_l = None
 
     rect.x += movement[0]
-    collisions = collision_test(rect,tiles)
+    collisions = collision_test(rect,tiles)[::-1]
     for tile in collisions:
         if movement[0] > 0:
             rect.right = tile.left
@@ -49,7 +49,7 @@ def move(rect,movement,tiles): # movement = [5,2]
             rect.left = tile.right
             left = True
     rect.y += movement[1]
-    collisions = collision_test(rect,tiles)
+    collisions = collision_test(rect,tiles)[::-1]
     for tile in collisions:
         if movement[1] + 10 >= 0:
             rect.bottom = tile.top
@@ -198,13 +198,37 @@ def run_level(level):
             mario.play_ani(dt)
 
             if gravity_acc <= 1: gravity_acc = 1
-            mario_move[1] += jump + gravity_acc if not bounce else gravity_acc
+            if bounce:
+                mario_move[1] += gravity_acc
+            else:
+                mario_move[1] += jump + gravity_acc
+
+            # speed range
+            if abs(mario_move[1]) >= 25:
+                mario_move[1] = gravity_acc
+                print(mario_move)
+            if abs(mario_move[0]) >= 10:
+                change_direction = False
+                run_direction = ""
+
             rect, (touch_ceiling, block_u), on_block, _, _ = move(mario.rect, mario_move, blocks_rect)
             mario.pos = [rect.x, rect.y]
 
             if not block_u == None:
-                tile, x, y = test_level.set_offset_tile(block_u.x, block_u.y, camera_x, [0, -24])
-                touched_blocks.append([x, y, tile[2]])
+                try:
+                    tile, x, y = test_level.set_offset_tile(block_u.x, block_u.y, camera_x, [0, -24])
+                except KeyError:
+                    pass
+                else:
+                    block_num = tile[1]
+
+                    if block_num in [3, 4]:
+                        try:
+                            test_level.del_tile_to_xy(x, y)
+                        except KeyError: pass
+                    else:
+                        touched_blocks.append([x, y, tile[2]])
+
             for n, tile in enumerate(touched_blocks):
                 x = tile[0]
                 y = tile[1]

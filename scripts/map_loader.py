@@ -59,6 +59,10 @@ class Level:
     def set_offset_tile_to_xy(self, x, y, offset):
         return self.maps[self.map_name].set_offset_to_xy(x, y, offset)
 
+    def del_tile_to_xy(self, x, y):
+        self.maps[self.map_name].del_tile_to_xy(x, y)
+        return
+
     def render(self, surf, tiles, camera_x):
         self.maps[self.map_name].render(surf, tiles, camera_x)
         return
@@ -85,6 +89,10 @@ class Map:
         tile, x, y = self.find_block(x, y)
         tile[2] = offset
         return tile, x, y
+
+    def del_tile_to_xy(self, x, y):
+        del self.map_layers[1][tuple_to_str((x, y))]
+        return
 
     def find_block(self, x, y):
         return self.map_layers[1][tuple_to_str((x, y))], x, y
