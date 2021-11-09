@@ -89,7 +89,7 @@ class Map:
             # if camera_x - 48 <= tile_pos[0] * 48 <= camera_x + 816:
             #     rect = pygame.Rect(tile_pos[0] * 48 - camera_x, tile_pos[1] * 48, 48, 48)
             #     rects.append(rect)
-            if camera_x + pos[0] - 144 <= tile_pos[0] * 48 <= camera_x + pos[0] + 144 and pos[1] - 144 <= tile_pos[1] * 48 <= pos[1] + 144:
+            if camera_x + pos[0] - 96 <= tile_pos[0] * 48 <= camera_x + pos[0] + 96 and pos[1] - 74 <= tile_pos[1] * 48 <= pos[1] + 74:
                 rect = pygame.Rect(tile_pos[0] * 48 - camera_x, tile_pos[1] * 48, 48, 48)
                 rects.append(rect)
 
