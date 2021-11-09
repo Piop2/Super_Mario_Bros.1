@@ -4,6 +4,7 @@ from scripts.map_loader import *
 from scripts.player import *
 
 pygame.init()
+pygame.joystick.init()
 monitor_size = [pygame.display.Info().current_w, pygame.display.Info().current_h]
 WINDOW_SIZE = (768, 720)
 screen = pygame.display.set_mode(WINDOW_SIZE)
@@ -13,6 +14,8 @@ game_screen = pygame.Surface(WINDOW_SIZE)
 pygame.display.set_caption("Super Mario Bros.1")
 clock = pygame.time.Clock()
 
+pygame.joystick.init()
+joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
 
 tile_data = {}
 for num, tile_style in enumerate(['OverWorld']):
@@ -100,6 +103,7 @@ def run_level(level):
     running = True
     while running:
         dt = clock.tick(50)
+
 
         ### RENDER ###
         # MAP
@@ -216,20 +220,20 @@ def run_level(level):
                 mario_move[1] += jump + gravity_acc
 
             # speed range
-            if abs(mario_move[1]) >= 25:
-                mario_move[1] = gravity_acc
-                print(mario_move)
-            if abs(mario_move[0]) >= 10:
-                change_direction = False
-                run_r = False
-                run_l = False
+            # if abs(mario_move[1]) >= 25:
+            #     mario_move[1] = gravity_acc
+            #     print(mario_move)
+            # if abs(mario_move[0]) >= 10:
+            #     change_direction = False
+            #     run_r = False
+            #     run_l = False
 
             rect, (touch_ceiling, block_u), on_block, _, _ = move(mario.rect, mario_move, blocks_rect)
             mario.pos = [rect.x, rect.y]
 
             if not block_u == None:
                 try:
-                    tile, x, y = test_level.set_offset_tile(block_u.x, block_u.y, camera_x, [0, -24])
+                    tile, x, y = test_level.set_offset_tile(block_u.x, block_u.y, camera_x, [0, 0])
                 except KeyError:
                     pass
                 else:
@@ -240,18 +244,25 @@ def run_level(level):
                             test_level.del_tile_to_xy(x, y)
                         except KeyError: pass
                     else:
-                        touched_blocks.append([x, y, tile[2]])
+                        touched_blocks.append([x, y, tile[2], -4, False])
 
             for n, tile in enumerate(touched_blocks):
                 x = tile[0]
                 y = tile[1]
                 offset = tile[2]
+                push_power = tile[3]
+                block_down = tile[4]
 
-                offset_y = 2.5
-                offset[1] += - offset[1] if offset[1] + offset_y >= 0 else offset_y
+                offset[1] += push_power if not block_down else - push_power
+                if offset[1] <= -24: block_down = True
+                if offset[1] >= 0 and block_down: offset[1] = 0
 
                 tile, x, y = test_level.set_offset_tile_to_xy(x, y, offset)
-                touched_blocks[n] = [x, y, tile[2]]
+
+                if offset[1] == 0:
+                    del touched_blocks[n]
+                else:
+                    touched_blocks[n] = [x, y, offset, push_power, block_down]
 
 
 
@@ -284,6 +295,30 @@ def run_level(level):
                 if event.type == pygame.QUIT:
                     running = False
 
+                if event.type == pygame.JOYBUTTONDOWN:
+                    if event.button == 1 or event.button == 3:
+                        up = True
+                    if event.button == 0 or event.button == 2:
+                        run = True
+
+                if event.type == pygame.JOYBUTTONUP:
+                    if event.button == 1 or event.button == 3:
+                        up = False
+                    if event.button == 0 or event.button == 2:
+                        run = False
+
+                if event.type == pygame.JOYHATMOTION:
+                    if not event.value[0] == 0:
+                        if event.value[0] == 1:
+                            right = True
+                        if event.value[0] == -1:
+                            left = True
+                    else:
+                        if right:
+                            right = False
+                        if left:
+                            left = False
+
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         running = False
@@ -312,6 +347,7 @@ def run_level(level):
                         up = False
                     if event.key == pygame.K_RSHIFT:
                         run = False
+
         else:
             if game_over:
                 mario.status[1] = "dead"
