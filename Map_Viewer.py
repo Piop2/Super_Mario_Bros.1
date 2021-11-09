@@ -19,7 +19,7 @@ for num, tile_style in enumerate(['OverWorld']):
 
 
 test_level = Level.load('data/maps/1-1')
-camera_x, map_size = test_level.get_start_data()
+camera_x, map_size, _ = test_level.get_start_data()
 map_size *= 48
 
 right = False
