@@ -12,7 +12,9 @@ class Mario:
                 "idle": load_img("data/images/character/small_idle/img.png"),
                 "jump": load_img("data/images/character/small_jump/img.png"),
                 "walk": Animation(*load_animation("data/images/character/small_walk")),
-                "run": Animation(*load_animation("data/images/character/small_walk"), speed=2)
+                "run": Animation(*load_animation("data/images/character/small_walk"), speed=2),
+                "change_direction": load_img("data/images/character/small_change_direction/img.png"),
+                "dead": load_img("data/images/character/small_dead/img.png")
             }
         }
 

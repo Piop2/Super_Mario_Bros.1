@@ -5,9 +5,9 @@ from scripts.player import *
 
 pygame.init()
 monitor_size = [pygame.display.Info().current_w, pygame.display.Info().current_h]
-screen = pygame.display.set_mode(monitor_size, pygame.FULLSCREEN)
-fullscreen = True
 WINDOW_SIZE = (768, 720)
+screen = pygame.display.set_mode(WINDOW_SIZE)
+fullscreen = False
 game_screen = pygame.Surface(WINDOW_SIZE)
 
 pygame.display.set_caption("Super Mario Bros.1")
@@ -63,6 +63,7 @@ def run_level(level):
     map_size *= 48
 
     GRAVITY = 0.6
+    pause = False
 
     ### mario ###
     up = False
@@ -77,6 +78,7 @@ def run_level(level):
     jump = 0
     mario_move = [0, 0]
     mario.check_rect()
+    game_over = False
 
     on_block = True
 
@@ -85,7 +87,7 @@ def run_level(level):
 
     running = True
     while running:
-        dt = clock.tick(60)
+        dt = clock.tick(50)
 
         ### RENDER ###
         # MAP
@@ -98,96 +100,127 @@ def run_level(level):
         else:
             screen.blit(game_screen, (0, 0))
 
-        ### ANIMATION ###
-        test_level.play_box(dt)
+        if not pause:
+            ### ANIMATION ###
+            test_level.play_box(dt)
 
-        ### MARIO ###
-        mario.check_rect()
-        gravity_acc += GRAVITY
+            ### MARIO ###
+            mario.check_rect()
+            blocks_rect = test_level.get_rects(camera_x, mario.pos)
+            gravity_acc += GRAVITY
 
-        if right:
-            mario_move[0] += WALK_SPEED if not run else RUN_SPEED
-            mario.look_right()
-            mario.status[1] = "walk"
-        if left:
-            mario_move[0] -= WALK_SPEED if not run else RUN_SPEED
-            mario.look_left()
-            mario.status[1] = "walk"
-        if run: mario.status[1] = "run"
-        if up and on_block:
-            if mario.status[0] == "big":
-                gravity_acc -= BIG_JUMP
-            else: jump -= SMALL_JUMP
-        if not on_block:
-            mario.status[1] = "jump"
-        if not jump and right == False and left == False and up == False:
-            mario.status[1] = "idle"
+            if right:
+                mario_move[0] += WALK_SPEED if not run else RUN_SPEED
+                mario.look_right()
+                mario.status[1] = "walk"
+            if left:
+                mario_move[0] -= WALK_SPEED if not run else RUN_SPEED
+                mario.look_left()
+                mario.status[1] = "walk"
+            if run: mario.status[1] = "run"
+            if up and on_block:
+                if mario.status[0] == "big":
+                    gravity_acc -= BIG_JUMP
+                else: jump -= SMALL_JUMP
+            if not on_block:
+                mario.status[1] = "jump"
+            if not jump and right == False and left == False and up == False:
+                mario.status[1] = "idle"
 
-        mario.play_ani(dt)
+            if mario.pos[1] >= WINDOW_SIZE[1]:
+                pause = True
+                game_over = True
+                gravity_acc = 0
+                jump = - 20
+                pygame.time.delay(1000)
 
-        if gravity_acc <= 1: gravity_acc = 1
-        mario_move[1] += jump + gravity_acc if not bounce else gravity_acc
-        rect, touch_ceiling, on_block, _, _ = move(mario.rect, mario_move, test_level.get_rects(camera_x))
-        mario.pos = [rect.x, rect.y]
+            mario.play_ani(dt)
 
-        if on_block:
-            jump = 0
-            gravity_acc = 0
-            bounce = False
-        if touch_ceiling: bounce = True
+            if gravity_acc <= 1: gravity_acc = 1
+            mario_move[1] += jump + gravity_acc if not bounce else gravity_acc
+            rect, touch_ceiling, on_block, _, _ = move(mario.rect, mario_move, blocks_rect)
+            mario.pos = [rect.x, rect.y]
 
-        if mario.pos[0] <= 0:
-            mario.pos[0] = 0
+            if on_block:
+                jump = 0
+                gravity_acc = 0
+                bounce = False
+            if touch_ceiling: bounce = True
 
-        # if jump == 0 and gravity_acc <= 1:
-        #     on_block = True
-
+            if mario.pos[0] <= 0:
+                mario.pos[0] = 0
 
 
-        ### CAMERA ###
-        if camera_x >= map_size - 768:
-            camera_x = map_size - 768
 
-        if mario.pos[0] >= WINDOW_SIZE[0] / 2 - mario.rect.size[0]:
-            mario.pos[0] = WINDOW_SIZE[0] / 2 - mario.rect.size[0]
-            camera_x += mario_move[0]
+            ### CAMERA ###
+            if camera_x >= map_size - 768:
+                camera_x = map_size - 768
 
-        ### reset ###
-        mario_move = [0, 0]
+            if mario.pos[0] >= WINDOW_SIZE[0] / 2 - mario.rect.size[0]:
+                if not camera_x >= map_size - 768:
+                    mario.pos[0] = WINDOW_SIZE[0] / 2 - mario.rect.size[0]
+                    camera_x += mario_move[0]
 
-        ### EVENT ###
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
+            ### reset ###
+            mario_move = [0, 0]
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
+            ### EVENT ###
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
                     running = False
-                if event.key == pygame.K_f:
-                    fullscreen = not fullscreen
-                    if fullscreen:
-                        pygame.display.set_mode(monitor_size, pygame.FULLSCREEN)
-                    else:
-                        screen = pygame.display.set_mode(WINDOW_SIZE)
 
-                if event.key == pygame.K_d:
-                    right = True
-                if event.key == pygame.K_a:
-                    left = True
-                if event.key == pygame.K_w:
-                    up = True
-                if event.key == pygame.K_RSHIFT:
-                    run = True
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        running = False
+                    if event.key == pygame.K_f:
+                        fullscreen = not fullscreen
+                        if fullscreen:
+                            pygame.display.set_mode(monitor_size, pygame.FULLSCREEN)
+                        else:
+                            screen = pygame.display.set_mode(WINDOW_SIZE)
 
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_d:
-                    right = False
-                if event.key == pygame.K_a:
-                    left = False
-                if event.key == pygame.K_w:
-                    up = False
-                if event.key == pygame.K_RSHIFT:
-                    run = False
+                    if event.key == pygame.K_d:
+                        right = True
+                    if event.key == pygame.K_a:
+                        left = True
+                    if event.key == pygame.K_w:
+                        up = True
+                    if event.key == pygame.K_RSHIFT:
+                        run = True
+
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_d:
+                        right = False
+                    if event.key == pygame.K_a:
+                        left = False
+                    if event.key == pygame.K_w:
+                        up = False
+                    if event.key == pygame.K_RSHIFT:
+                        run = False
+        else:
+            if game_over:
+                mario.status[1] = "dead"
+                gravity_acc += GRAVITY
+                mario.pos[1] += jump + gravity_acc
+                if mario.pos[1] >= WINDOW_SIZE[1] + 48:
+                    pygame.time.delay(1000)
+                    return
+
+
+            ### EVENT ###
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        running = False
+                    if event.key == pygame.K_f:
+                        fullscreen = not fullscreen
+                        if fullscreen:
+                            pygame.display.set_mode(monitor_size, pygame.FULLSCREEN)
+                        else:
+                            screen = pygame.display.set_mode(WINDOW_SIZE)
 
         pygame.display.update()
     return
