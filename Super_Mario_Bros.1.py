@@ -31,9 +31,14 @@ def collision_test(rect,tiles):
 
 def move(rect,movement,tiles): # movement = [5,2]
     up = False
+    block_u = None
     down = False
+    block_d = None
     right = False
+    block_r = None
     left = False
+    block_l = None
+
     rect.x += movement[0]
     collisions = collision_test(rect,tiles)
     for tile in collisions:
@@ -52,7 +57,8 @@ def move(rect,movement,tiles): # movement = [5,2]
         if movement[1] < 0:
             rect.top = tile.bottom
             up = True
-    return rect, up, down, right, left
+            block_u = tile
+    return rect, (up, block_u), down, right, left
 
 
 def run_level(level):
@@ -70,6 +76,8 @@ def run_level(level):
     right = False
     left = False
     run = False
+    run_direction = ""
+    change_direction = False
     WALK_SPEED = 4
     RUN_SPEED = 6
     SMALL_JUMP = 15.5
@@ -84,6 +92,8 @@ def run_level(level):
 
     touch_ceiling = False
     bounce = False
+
+    touched_blocks = []
 
     running = True
     while running:
@@ -110,22 +120,73 @@ def run_level(level):
             gravity_acc += GRAVITY
 
             if right:
-                mario_move[0] += WALK_SPEED if not run else RUN_SPEED
                 mario.look_right()
-                mario.status[1] = "walk"
+
+                if run_direction == "left" and on_block and not change_direction:
+                    run_direction = "right"
+                    change_direction = True
+                    mario_move[0] = - RUN_SPEED
+                if change_direction and run_direction == "right":
+                    if mario_move[0] > 0:
+                        change_direction = False
+
+                if not run:
+                    mario_move[0] += WALK_SPEED
+                elif change_direction:
+                    mario_move[0] += 0.5
+                else:
+                    mario_move[0] += RUN_SPEED
+
+                if not change_direction:
+                    mario.status[1] = "walk"
+                else:
+                    mario.status[1] = "change_direction"
             if left:
-                mario_move[0] -= WALK_SPEED if not run else RUN_SPEED
                 mario.look_left()
-                mario.status[1] = "walk"
-            if run: mario.status[1] = "run"
+
+                if run_direction == "right" and on_block and not change_direction:
+                    run_direction = "left"
+                    change_direction = True
+                    mario_move[0] = RUN_SPEED
+                if change_direction and run_direction == "left":
+                    if mario_move[0] < 0:
+                        change_direction = False
+
+                if not run:
+                    mario_move[0] -= WALK_SPEED
+                elif change_direction:
+                    mario_move[0] -= 0.5
+                else:
+                    mario_move[0] -= RUN_SPEED
+
+                if not change_direction:
+                    mario.status[1] = "walk"
+                else:
+                    mario.status[1] = "change_direction"
+
+            # if right and left:
+            #     change_direction = False
+            #     run_direction = ""
+
+            if run and not change_direction:
+                mario.status[1] = "run"
+                if right:
+                    run_direction = "right"
+                else:
+                    run_direction = "left"
+
             if up and on_block:
                 if mario.status[0] == "big":
                     gravity_acc -= BIG_JUMP
                 else: jump -= SMALL_JUMP
+
             if not on_block:
                 mario.status[1] = "jump"
+
             if not jump and right == False and left == False and up == False:
                 mario.status[1] = "idle"
+                change_direction = False
+                run_direction = ""
 
             if mario.pos[1] >= WINDOW_SIZE[1]:
                 pause = True
@@ -138,8 +199,24 @@ def run_level(level):
 
             if gravity_acc <= 1: gravity_acc = 1
             mario_move[1] += jump + gravity_acc if not bounce else gravity_acc
-            rect, touch_ceiling, on_block, _, _ = move(mario.rect, mario_move, blocks_rect)
+            rect, (touch_ceiling, block_u), on_block, _, _ = move(mario.rect, mario_move, blocks_rect)
             mario.pos = [rect.x, rect.y]
+
+            if not block_u == None:
+                tile, x, y = test_level.set_offset_tile(block_u.x, block_u.y, camera_x, [0, -24])
+                touched_blocks.append([x, y, tile[2]])
+            for n, tile in enumerate(touched_blocks):
+                x = tile[0]
+                y = tile[1]
+                offset = tile[2]
+
+                offset_y = 2.5
+                offset[1] += - offset[1] if offset[1] + offset_y >= 0 else offset_y
+
+                tile, x, y = test_level.set_offset_tile_to_xy(x, y, offset)
+                touched_blocks[n] = [x, y, tile[2]]
+
+
 
             if on_block:
                 jump = 0
@@ -162,7 +239,8 @@ def run_level(level):
                     camera_x += mario_move[0]
 
             ### reset ###
-            mario_move = [0, 0]
+            if not change_direction:
+                mario_move = [0, 0]
 
             ### EVENT ###
             for event in pygame.event.get():

@@ -13,6 +13,9 @@ MAP_BACKGROUND_COLOR = {
 def str_to_turple(s):
     return tuple([int(v) for v in s.split('.')])
 
+def tuple_to_str(t):
+    return f"{t[0]}.{t[1]}"
+
 class Level:
     def __init__(self, level_data, maps):
         self.level_data = level_data
@@ -49,6 +52,13 @@ class Level:
     def get_rects(self, camera_x, pos):
         return self.maps[self.map_name].get_rects(camera_x, pos)
 
+    def set_offset_tile(self, x, y, camera_x, offset):
+        return self.maps[self.map_name].set_offset(x, y, camera_x, offset)
+
+
+    def set_offset_tile_to_xy(self, x, y, offset):
+        return self.maps[self.map_name].set_offset_to_xy(x, y, offset)
+
     def render(self, surf, tiles, camera_x):
         self.maps[self.map_name].render(surf, tiles, camera_x)
         return
@@ -61,6 +71,23 @@ class Map:
 
     def play_box(self, dt):
         self.box_ani.play(dt)
+
+    def set_offset(self, x, y, camera_x, offset):
+        tile, x, y = self.find_block(int((x + camera_x) / 48), int(y / 48))
+        if len(tile) >= 3:
+            tile[2] = offset
+        else:
+            tile.append(offset)
+        self.map_layers[1][tuple_to_str((x, y))] = tile
+        return tile, x, y
+
+    def set_offset_to_xy(self, x, y, offset):
+        tile, x, y = self.find_block(x, y)
+        tile[2] = offset
+        return tile, x, y
+
+    def find_block(self, x, y):
+        return self.map_layers[1][tuple_to_str((x, y))], x, y
 
     @property
     def start_at(self):
