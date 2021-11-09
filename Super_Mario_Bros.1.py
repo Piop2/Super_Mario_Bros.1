@@ -76,8 +76,10 @@ def run_level(level):
     right = False
     left = False
     run = False
-    run_direction = ""
+    run_r = True
+    run_l = True
     change_direction = False
+    run_timer = 0
     WALK_SPEED = 4
     RUN_SPEED = 6
     SMALL_JUMP = 15.5
@@ -110,6 +112,7 @@ def run_level(level):
         else:
             screen.blit(game_screen, (0, 0))
 
+
         if not pause:
             ### ANIMATION ###
             test_level.play_box(dt)
@@ -122,11 +125,14 @@ def run_level(level):
             if right:
                 mario.look_right()
 
-                if run_direction == "left" and on_block and not change_direction:
-                    run_direction = "right"
+                if run_l and not left and on_block and \
+                        not change_direction and pygame.time.get_ticks() - run_timer >= 1000:
+
+                    run_r = True
+                    run_l = False
                     change_direction = True
                     mario_move[0] = - RUN_SPEED
-                if change_direction and run_direction == "right":
+                if change_direction and run_r:
                     if mario_move[0] > 0:
                         change_direction = False
 
@@ -144,11 +150,14 @@ def run_level(level):
             if left:
                 mario.look_left()
 
-                if run_direction == "right" and on_block and not change_direction:
-                    run_direction = "left"
+                if run_r and not right and on_block and \
+                        not change_direction and pygame.time.get_ticks() - run_timer >= 1000:
+
+                    run_r = False
+                    run_l = True
                     change_direction = True
                     mario_move[0] = RUN_SPEED
-                if change_direction and run_direction == "left":
+                if change_direction and run_l:
                     if mario_move[0] < 0:
                         change_direction = False
 
@@ -164,16 +173,18 @@ def run_level(level):
                 else:
                     mario.status[1] = "change_direction"
 
-            # if right and left:
-            #     change_direction = False
-            #     run_direction = ""
-
             if run and not change_direction:
                 mario.status[1] = "run"
                 if right:
-                    run_direction = "right"
+                    if not run_r:
+                        run_timer = pygame.time.get_ticks()
+                    run_r = True
+                    run_l = False
                 else:
-                    run_direction = "left"
+                    if not run_l:
+                        run_timer = pygame.time.get_ticks()
+                    run_r = False
+                    run_l = True
 
             if up and on_block:
                 if mario.status[0] == "big":
@@ -186,7 +197,8 @@ def run_level(level):
             if not jump and right == False and left == False and up == False:
                 mario.status[1] = "idle"
                 change_direction = False
-                run_direction = ""
+                run_r = False
+                run_l = False
 
             if mario.pos[1] >= WINDOW_SIZE[1]:
                 pause = True
@@ -209,7 +221,8 @@ def run_level(level):
                 print(mario_move)
             if abs(mario_move[0]) >= 10:
                 change_direction = False
-                run_direction = ""
+                run_r = False
+                run_l = False
 
             rect, (touch_ceiling, block_u), on_block, _, _ = move(mario.rect, mario_move, blocks_rect)
             mario.pos = [rect.x, rect.y]
