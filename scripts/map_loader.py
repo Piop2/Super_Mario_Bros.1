@@ -46,8 +46,8 @@ class Level:
         self.maps[self.map_name].play_box(dt)
         return
 
-    def get_rects(self, camera_x):
-        return self.maps[self.map_name].get_rects(camera_x)
+    def get_rects(self, camera_x, pos):
+        return self.maps[self.map_name].get_rects(camera_x, pos)
 
     def render(self, surf, tiles, camera_x):
         self.maps[self.map_name].render(surf, tiles, camera_x)
@@ -82,13 +82,17 @@ class Map:
     def map_size(self):
         return self.map_data["mapSize"]
 
-    def get_rects(self, camera_x):
+    def get_rects(self, camera_x, pos):
         rects = []
         for tile in self.map_layers[1]:
             tile_pos = str_to_turple(tile)
-            if camera_x - 48 <= tile_pos[0] * 48 <= camera_x + 816:
+            # if camera_x - 48 <= tile_pos[0] * 48 <= camera_x + 816:
+            #     rect = pygame.Rect(tile_pos[0] * 48 - camera_x, tile_pos[1] * 48, 48, 48)
+            #     rects.append(rect)
+            if camera_x + pos[0] - 144 <= tile_pos[0] * 48 <= camera_x + pos[0] + 144 and pos[1] - 144 <= tile_pos[1] * 48 <= pos[1] + 144:
                 rect = pygame.Rect(tile_pos[0] * 48 - camera_x, tile_pos[1] * 48, 48, 48)
                 rects.append(rect)
+
         return rects
 
     def render(self, surf, tiles, camera_x):
