@@ -5,7 +5,11 @@ from.animation import Animation
 
 
 def str_to_turple(s):
-    return tuple([int(v) for v in s.split('.')])
+    try:
+        t = tuple([int(v) for v in s.split('.')])
+    except:
+        print(s)
+    return t
 
 def tuple_to_str(t):
     return f"{t[0]}.{t[1]}"
