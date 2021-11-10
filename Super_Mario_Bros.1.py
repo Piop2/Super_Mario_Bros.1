@@ -2,6 +2,7 @@ import pygame
 from scripts.tile import *
 from scripts.map_loader import *
 from scripts.player import *
+from scripts.entity import *
 
 pygame.init()
 pygame.joystick.init()
@@ -21,6 +22,13 @@ tile_data = {}
 for num, tile_style in enumerate(['OverWorld']):
     tiles, _ = load_tiles("data/images/tilesets/OverWorld")
     tile_data[num] = tiles
+
+MAP_BACKGROUND_COLOR = {
+    "OverWorld" : (92, 148, 252),
+    "UnderGround" : (0, 0, 0),
+    "UnderWater" : (92, 148, 252),
+    "Castle" : (0, 0, 0)
+}
 
 ### PLAYER ###
 mario = Mario()
@@ -68,12 +76,13 @@ def run_level(level):
     global screen, fullscreen
 
     test_level = Level.load(f'data/maps/{level}')
-    camera_x, map_size, mario.pos = test_level.get_start_data()
+    camera_x, map_size, mario.pos, map_type = test_level.get_start_data()
     map_size *= 48
 
     GRAVITY = 0.6
     pause = False
 
+    entity_mob = {"entity": {"summon": [], "move": []}, "mob": []}
     ### mario ###
     up = False
     right = False
@@ -107,7 +116,18 @@ def run_level(level):
 
         ### RENDER ###
         # MAP
-        test_level.render(game_screen, tile_data, camera_x)
+        game_screen.fill(MAP_BACKGROUND_COLOR[map_type])
+        test_level.render(game_screen, 0,  tile_data, camera_x)
+
+        for entity in entity_mob["entity"]["summon"]:
+            erase = pygame.Surface((48, 48))
+            erase.fill(MAP_BACKGROUND_COLOR[map_type])
+            entity[0].render(game_screen, camera_x)
+            game_screen.blit(erase, (entity[1][0] * 48 - camera_x, entity[1][1] * 48))
+        for entity in entity_mob["entity"]["move"]:
+            entity.render(game_screen, camera_x)
+
+        test_level.render(game_screen, 1,  tile_data, camera_x)
         mario.render(game_screen)
 
         screen.fill((0, 0, 0))
@@ -218,15 +238,7 @@ def run_level(level):
                 mario_move[1] += gravity_acc
             else:
                 mario_move[1] += jump + gravity_acc
-
-            # speed range
-            # if abs(mario_move[1]) >= 25:
-            #     mario_move[1] = gravity_acc
-            #     print(mario_move)
-            # if abs(mario_move[0]) >= 10:
-            #     change_direction = False
-            #     run_r = False
-            #     run_l = False
+            
 
             rect, (touch_ceiling, block_u), on_block, _, _ = move(mario.rect, mario_move, blocks_rect)
             mario.pos = [rect.x, rect.y]
@@ -239,10 +251,29 @@ def run_level(level):
                 else:
                     block_num = tile[1]
 
-                    if block_num in [3, 4]:
+
+                    if len(tile) >= 4 and tile[1] != 2:
+                        item = tile[3][0]
+                        item_n = tile[3][1]
+                        item_n -= 1
+                        if item == "mushroom_r":
+                            entity = Mushroom_RED(x * 48, y * 48)
+                            
+                        if item_n <= 0:
+                            test_level.set_tile(x, y, [0, 2, tile[2]])
+                        else:
+                            test_level.set_tile(x, y, [0, tile[1], tile[2], [item, item_n]])
+
+                        entity_mob["entity"]["summon"].append([entity, (x, y)])
+                        
+
+
+                    if block_num in [3, 4] and not len(tile) >= 4:
                         try:
                             test_level.del_tile_to_xy(x, y)
                         except KeyError: pass
+                    elif block_num in [0, 1, 2]:
+                        pass
                     else:
                         touched_blocks.append([x, y, tile[2], -4, False])
 
@@ -264,8 +295,6 @@ def run_level(level):
                 else:
                     touched_blocks[n] = [x, y, offset, push_power, block_down]
 
-
-
             if on_block:
                 jump = 0
                 gravity_acc = 0
@@ -275,7 +304,17 @@ def run_level(level):
             if mario.pos[0] <= 0:
                 mario.pos[0] = 0
 
-
+            ### ENTITY & MOB ###
+            for i, entity in enumerate(entity_mob["entity"]["summon"]):
+                entity[0].pos[1] -= 1
+                if entity[0].pos[1] <= (entity[1][1] - 1) * 48:
+                    entity[0].pos[1] = (entity[1][1] - 1) * 48
+                    entity_mob["entity"]["move"].append(entity[0])
+                    del entity_mob["entity"]["summon"][i]
+            
+            for i, entity in enumerate(entity_mob["entity"]["move"]):
+                pass
+                
 
             ### CAMERA ###
             if camera_x >= map_size - 768:
@@ -296,15 +335,15 @@ def run_level(level):
                     running = False
 
                 if event.type == pygame.JOYBUTTONDOWN:
-                    if event.button == 1 or event.button == 3:
+                    if event.button == 0 or event.button == 3:
                         up = True
-                    if event.button == 0 or event.button == 2:
+                    if event.button == 1 or event.button == 2:
                         run = True
 
                 if event.type == pygame.JOYBUTTONUP:
-                    if event.button == 1 or event.button == 3:
+                    if event.button == 0 or event.button == 3:
                         up = False
-                    if event.button == 0 or event.button == 2:
+                    if event.button == 1 or event.button == 2:
                         run = False
 
                 if event.type == pygame.JOYHATMOTION:
