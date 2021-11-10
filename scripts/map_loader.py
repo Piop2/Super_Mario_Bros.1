@@ -3,12 +3,6 @@ import json
 from .core_fuc import *
 from.animation import Animation
 
-MAP_BACKGROUND_COLOR = {
-    "OverWorld" : (92, 148, 252),
-    "UnderGround" : (0, 0, 0),
-    "UnderWater" : (92, 148, 252),
-    "Castle" : (0, 0, 0)
-}
 
 def str_to_turple(s):
     return tuple([int(v) for v in s.split('.')])
@@ -43,11 +37,14 @@ class Level:
         return Level(level_data, maps)
 
     def get_start_data(self):
-        return self.maps[self.map_name].camera_x, self.maps[self.map_name].map_size, self.maps[self.map_name].start_at
+        return self.maps[self.map_name].camera_x, self.maps[self.map_name].map_size, self.maps[self.map_name].start_at, self.maps[self.map_name].map_type
 
     def play_box(self, dt):
         self.maps[self.map_name].play_box(dt)
         return
+    
+    def set_tile(self, x, y, tile_data):
+        return self.maps[self.map_name].set_tile(x, y, tile_data)
 
     def get_rects(self, camera_x, pos):
         return self.maps[self.map_name].get_rects(camera_x, pos)
@@ -63,8 +60,8 @@ class Level:
         self.maps[self.map_name].del_tile_to_xy(x, y)
         return
 
-    def render(self, surf, tiles, camera_x):
-        self.maps[self.map_name].render(surf, tiles, camera_x)
+    def render(self, surf, layer_n, tiles, camera_x):
+        self.maps[self.map_name].render(surf, layer_n, tiles, camera_x)
         return
 
 class Map:
@@ -84,6 +81,10 @@ class Map:
             tile.append(offset)
         self.map_layers[1][tuple_to_str((x, y))] = tile
         return tile, x, y
+    
+    def set_tile(self, x, y, tile_data):
+        self.map_layers[1][tuple_to_str((x, y))] = tile_data
+        return
 
     def set_offset_to_xy(self, x, y, offset):
         tile, x, y = self.find_block(x, y)
@@ -130,28 +131,27 @@ class Map:
 
         return rects
 
-    def render(self, surf, tiles, camera_x):
-        surf.fill(MAP_BACKGROUND_COLOR[self.map_type])
-
+    def render(self, surf, layer_n, tiles, camera_x):
         box_ani_num = self.box_ani.layer
 
-        for layer in self.map_layers:
-            for tile in layer:
-                tile_pos = str_to_turple(tile)
-                if camera_x - 48 <= tile_pos[0] * 48 <= camera_x + 816:
-                    tile_type = layer[tile][0]
-                    tile_num = layer[tile][1]
+        layer = self.map_layers[layer_n]
 
-                    try:
-                        offset_pos = layer[tile][2]
-                    except IndexError:
-                        offset_pos = (0, 0)
+        for tile in layer:
+            tile_pos = str_to_turple(tile)
+            if camera_x - 48 <= tile_pos[0] * 48 <= camera_x + 816:
+                tile_type = layer[tile][0]
+                tile_num = layer[tile][1]
 
-                    if tile_num == 100:
-                        item_box_img = clip(tiles[tile_type][100], box_ani_num * 48 + box_ani_num, 0, 48, 48)
+                try:
+                    offset_pos = layer[tile][2]
+                except IndexError:
+                    offset_pos = (0, 0)
 
-                        surf.blit(item_box_img, (tile_pos[0] * 48 - camera_x + offset_pos[0],
-                                                               tile_pos[1] * 48 + offset_pos[1]))
-                    else:
-                        surf.blit(tiles[tile_type][tile_num], (tile_pos[0] * 48 - camera_x + offset_pos[0],
+                if tile_num == 100:
+                    item_box_img = clip(tiles[tile_type][100], box_ani_num * 48 + box_ani_num, 0, 48, 48)
+
+                    surf.blit(item_box_img, (tile_pos[0] * 48 - camera_x + offset_pos[0],
+                                                            tile_pos[1] * 48 + offset_pos[1]))
+                else:
+                    surf.blit(tiles[tile_type][tile_num], (tile_pos[0] * 48 - camera_x + offset_pos[0],
                                                            tile_pos[1] * 48 + offset_pos[1]))
