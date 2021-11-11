@@ -7,3 +7,7 @@
 /scripts/__pycache__/
 
 /clip_all_tiles.py
+
+/build/
+/dist/
+/Super_Mario_Bros.1.spec

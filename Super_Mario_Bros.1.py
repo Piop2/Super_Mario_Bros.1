@@ -1,4 +1,5 @@
 import pygame
+import sys
 from scripts.core_fuc import *
 from scripts.tile import *
 from scripts.map_loader import *
@@ -72,12 +73,6 @@ class Game:
         self.best_score = read_f("data/saves/save1.json")["bestScore"]
         self.time = 0
         return
-    
-    def start_menu(self):
-        return
-    
-    def load_screen(self):
-        return
 
     def run_level(self, level):
         global screen, fullscreen
@@ -91,13 +86,14 @@ class Game:
         mario = Mario()
 
 
-        test_level = Level.load(f'data/maps/{level}')
-        camera_x, map_size, mario.pos, map_type = test_level.get_start_data()
+        level_map = Level.load(f'data/maps/{level}')
+        camera_x, map_size, mario.pos, map_type = level_map.get_start_data()
         map_size *= 48
 
         GRAVITY = 0.7
         pause = False
         game_over = False
+        clear = False
 
 
         entity_mob = {"entity": {"summon": [], "move": []}, "mob": []}
@@ -136,7 +132,7 @@ class Game:
             ### RENDER ###
             # MAP
             game_screen.fill(MAP_BACKGROUND_COLOR[map_type])
-            test_level.render(game_screen, 0,  tile_data, camera_x)
+            level_map.render(game_screen, 0,  tile_data, camera_x)
 
             for entity in entity_mob["entity"]["summon"]:
                 erase = pygame.Surface((48, 48))
@@ -146,7 +142,7 @@ class Game:
             for entity in entity_mob["entity"]["move"]:
                 entity.render(game_screen, camera_x)
 
-            test_level.render(game_screen, 1,  tile_data, camera_x)
+            level_map.render(game_screen, 1,  tile_data, camera_x)
 
             mario.render(game_screen)
 
@@ -159,11 +155,11 @@ class Game:
 
             if not pause:
                 ### ANIMATION ###
-                test_level.play_box(dt)
+                level_map.play_box(dt)
 
                 ### MARIO ###
                 mario.check_rect()
-                blocks_rect = test_level.get_rects(camera_x, mario.pos)
+                blocks_rect = level_map.get_rects(camera_x, mario.pos)
                 gravity_acc += GRAVITY
 
                 if right:
@@ -270,7 +266,7 @@ class Game:
                     on_block = False
                     steel_up = False
                     try:
-                        tile, x, y = test_level.set_offset_tile(block_u.x, block_u.y, camera_x, [0, 0])
+                        tile, x, y = level_map.set_offset_tile(block_u.x, block_u.y, camera_x, [0, 0])
                     except KeyError:
                         pass
                     else:
@@ -290,9 +286,9 @@ class Game:
                             else: raise ValueError
                                 
                             if item_n <= 0:
-                                test_level.set_tile(x, y, [0, 2, tile[2]])
+                                level_map.set_tile(x, y, [0, 2, tile[2]])
                             else:
-                                test_level.set_tile(x, y, [0, tile[1], tile[2], [item, item_n]])
+                                level_map.set_tile(x, y, [0, tile[1], tile[2], [item, item_n]])
                             print(f"Summon: {str(entity)} - position:{entity.pos}")
                             entity_mob["entity"]["summon"].append([entity, (x, y)])
                             
@@ -300,7 +296,7 @@ class Game:
 
                         if block_num in [3, 4] and not len(tile) >= 4:
                             try:
-                                test_level.del_tile_to_xy(x, y)
+                                level_map.del_tile_to_xy(x, y)
                             except KeyError: pass
                         elif block_num in [0, 1, 2]:
                             pass
@@ -318,7 +314,7 @@ class Game:
                     if offset[1] <= -24: block_down = True
                     if offset[1] >= 0 and block_down: offset[1] = 0
 
-                    tile, x, y = test_level.set_offset_tile_to_xy(x, y, offset)
+                    tile, x, y = level_map.set_offset_tile_to_xy(x, y, offset)
 
                     if offset[1] == 0:
                         del touched_blocks[n]
@@ -346,7 +342,7 @@ class Game:
                 
                 for i, entity in enumerate(entity_mob["entity"]["move"]):
                     entity.play_ani(dt)
-                    entity_blocks_rect = test_level.get_rects_to_xy(entity.pos)
+                    entity_blocks_rect = level_map.get_rects_to_xy(entity.pos)
                     entity_move = entity.move(GRAVITY)
                     rect, (_, _), (touch_down, _), (touch_r, _), (touch_l, _) = move(entity.rect, entity_move, entity_blocks_rect)
                     if touch_r or touch_l:
@@ -378,7 +374,8 @@ class Game:
                 ### EVENT ###
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
-                        running = False
+                        pygame.quit()
+                        sys.exit()
 
                     if event.type == pygame.JOYBUTTONDOWN:
                         if event.button == 0 or event.button == 3:
@@ -408,8 +405,6 @@ class Game:
                                 left = False
 
                     if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_ESCAPE:
-                            running = False
                         if event.key == pygame.K_f:
                             fullscreen = not fullscreen
                             if fullscreen:
@@ -433,6 +428,8 @@ class Game:
                             left = False
                         if event.key == pygame.K_w:
                             up = False
+                            if steel_up:
+                                jump += 5
                             steel_up = False
 
                         if event.key == pygame.K_RSHIFT:
@@ -451,11 +448,10 @@ class Game:
                 ### EVENT ###
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
-                        running = False
+                        pygame.quit()
+                        sys.exit()
 
                     if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_ESCAPE:
-                            running = False
                         if event.key == pygame.K_f:
                             fullscreen = not fullscreen
                             if fullscreen:
@@ -465,23 +461,85 @@ class Game:
 
             pygame.display.update()
         
-        if game_over:
-            return 1
-        else:
-            return 0
+        return clear
+
+    def title_screen(self):
+        global screen, fullscreen
+        title = load_img("data/images/title.png")
+        mario_img = load_img("data/images/title_mario.png")
+        map_img = load_img("data/images/title_map.png")
+
+        running = True
+        while running:
+            dt = clock.tick(50)
+
+            game_screen.fill(MAP_BACKGROUND_COLOR["OverWorld"])
+            game_screen.blit(map_img, (0, WINDOW_SIZE[1] - map_img.get_height()))
+            game_screen.blit(mario_img, (123, 576))
+            game_screen.blit(title, (120, 72))
+            
+            screen.fill((255, 0, 0))
+            if fullscreen:
+                screen.blit(game_screen, ((monitor_size[0] / 2) - (WINDOW_SIZE[0] / 2), (monitor_size[1] / 2) - (WINDOW_SIZE[1] / 2)))
+            else:
+                screen.blit(game_screen, (0, 0))
+
+
+            ### EVENT ###
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                
+                if event.type == pygame.JOYBUTTONDOWN:
+                    if event.button == 7:
+                        running = False
+
+
+                if event.type == pygame.KEYDOWN:
+
+                    if event.key == pygame.K_f:
+                        fullscreen = not fullscreen
+                        if fullscreen:
+                            pygame.display.set_mode(monitor_size, pygame.FULLSCREEN)
+                        else:
+                            screen = pygame.display.set_mode(WINDOW_SIZE)
+
+
+                    if event.key == pygame.K_RETURN:
+                        running = False
+            pygame.display.update()
+        return
+
+
+
+
+
+
 
     def main(self):
         self.life = 1
 
+        # title screen
+        self.title_screen()
+
         running = True
         while running:
-            game_result = self.run_level("1-1")
-            if game_result == 1:
+            # level intro
+
+            # game start
+            game_clear = self.run_level("1-1")
+            if game_clear:
+                pass
+            else:
                 self.life -= 1
-            elif game_result == 0:
-                pygame.quit()
-                return
-            if self.life <= 0:
+
+                if self.time <= 0: # time up
+                    pass
+
+                if self.life <= 0: # game over
+                    pass
+
                 running = False
         return self.main()
 
