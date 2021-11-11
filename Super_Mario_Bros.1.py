@@ -1,6 +1,9 @@
 import pygame
 import sys
+
+from pygame import color
 from scripts.core_fuc import *
+from scripts.text import *
 from scripts.tile import *
 from scripts.map_loader import *
 from scripts.player import *
@@ -70,6 +73,7 @@ class Game:
     def __init__(self):
         self.life = 0
         self.score = 0
+        self.coin = 0
         self.best_score = read_f("data/saves/save1.json")["bestScore"]
         self.time = 0
         return
@@ -468,6 +472,17 @@ class Game:
         title = load_img("data/images/title.png")
         mario_img = load_img("data/images/title_mario.png")
         map_img = load_img("data/images/title_map.png")
+        pointer = load_img("data/images/title_pointer.png")
+        coin_img = load_img("data/images/title_coin.png")
+
+        pointer_y = [408, 456]
+        select_num = 0
+
+        big_font_order = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', 'x', '!', 'c', 'a', '_', '.']
+
+        big_font = Font("data/font/big_font.png", (0, 0, 0), (0, 0, 0), big_font_order)
+        colored_big_font = Font("data/font/big_font.png", (252, 252, 252), (252, 188, 176), big_font_order)
+        colored_text = "c2021 SEOUN"
 
         running = True
         while running:
@@ -477,8 +492,21 @@ class Game:
             game_screen.blit(map_img, (0, WINDOW_SIZE[1] - map_img.get_height()))
             game_screen.blit(mario_img, (123, 576))
             game_screen.blit(title, (120, 72))
+            game_screen.blit(pointer, (216, pointer_y[select_num]))
+
+            # text
+
+            big_font.render(game_screen, "1 PLAYER GAME", (264, 408))
+            if select_num == 1:
+                big_font.render(game_screen, "a SNGYN_P", (264, 456))
+            else:
+                big_font.render(game_screen, "2 PLAYER GAME", (264, 456))
+            big_font.render(game_screen, "TOP - {0:06d}".format(self.best_score), (288, 528))
+
+            colored_big_font.render(game_screen, colored_text, (120 + title.get_width() - colored_big_font.width(colored_text), 336))
+
             
-            screen.fill((255, 0, 0))
+            screen.fill((0, 0, 0))
             if fullscreen:
                 screen.blit(game_screen, ((monitor_size[0] / 2) - (WINDOW_SIZE[0] / 2), (monitor_size[1] / 2) - (WINDOW_SIZE[1] / 2)))
             else:
@@ -493,7 +521,16 @@ class Game:
                 
                 if event.type == pygame.JOYBUTTONDOWN:
                     if event.button == 7:
-                        running = False
+                        if select_num == 0:
+                            running = False
+                        else: pass
+                
+                if event.type == pygame.JOYHATMOTION:
+                    if not event.value[1] == 0:
+                        if event.value[1] == 1:
+                            select_num -= 1 if not select_num == 0 else 0
+                        else:
+                            select_num += 1 if not select_num + 1 == len(pointer_y) else 0
 
 
                 if event.type == pygame.KEYDOWN:
@@ -504,10 +541,17 @@ class Game:
                             pygame.display.set_mode(monitor_size, pygame.FULLSCREEN)
                         else:
                             screen = pygame.display.set_mode(WINDOW_SIZE)
-
+                    
+                    if event.key == pygame.K_w:
+                        select_num -= 1 if not select_num == 0 else 0
+                    
+                    if event.key == pygame.K_s:
+                        select_num += 1 if not select_num + 1 == len(pointer_y) else 0
 
                     if event.key == pygame.K_RETURN:
-                        running = False
+                        if select_num == 0:
+                            running = False
+                        else: pass
             pygame.display.update()
         return
 

@@ -19,3 +19,11 @@ def load_img(path):
     img = pygame.image.load(path)
     img.set_colorkey(COLORKEY)
     return img.copy()
+
+def swap_color(img,old_c,new_c):
+    global e_colorkey
+    img.set_colorkey(old_c)
+    surf = img.copy()
+    surf.fill(new_c)
+    surf.blit(img,(0,0))
+    return surf
