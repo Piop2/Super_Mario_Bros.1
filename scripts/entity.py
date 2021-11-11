@@ -46,7 +46,7 @@ class Entity:
 class Mushroom_RED(Entity):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.img = load_img("data/images/entity/mushroom/Mushroom_Red.png")
+        self.img = load_img("data/images/entity/Mushroom/Mushroom_Red.png")
         self._speed = 4
         self.acc_y = 0
         self.__entity_name = "mushroom_r"
@@ -67,7 +67,7 @@ class Mushroom_RED(Entity):
 class Mushroom_GREEN(Entity):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.img = load_img("data/images/entity/mushroom/Mushroom_GREEN.png")
+        self.img = load_img("data/images/entity/Mushroom/Mushroom_GREEN.png")
         self._speed = 4
         self.acc_y = 0
         self.__entity_name = "mushroom_g"
