@@ -55,6 +55,9 @@ class Level:
 
     def set_offset_tile(self, x, y, camera_x, offset):
         return self.maps[self.map_name].set_offset(x, y, camera_x, offset)
+    
+    def get_rects_to_xy(self, pos):
+        return self.maps[self.map_name].get_rects_to_xy(pos)
 
 
     def set_offset_tile_to_xy(self, x, y, offset):
@@ -126,14 +129,25 @@ class Map:
         rects = []
         for tile in self.map_layers[1]:
             tile_pos = str_to_turple(tile)
-            # if camera_x - 48 <= tile_pos[0] * 48 <= camera_x + 816:
-            #     rect = pygame.Rect(tile_pos[0] * 48 - camera_x, tile_pos[1] * 48, 48, 48)
-            #     rects.append(rect)
+
             if camera_x + pos[0] - 96 <= tile_pos[0] * 48 <= camera_x + pos[0] + 96 and pos[1] - 74 <= tile_pos[1] * 48 <= pos[1] + 74:
                 rect = pygame.Rect(tile_pos[0] * 48 - camera_x, tile_pos[1] * 48, 48, 48)
                 rects.append(rect)
 
         return rects
+    
+    def get_rects_to_xy(self, pos):
+        rects = []
+        for tile in self.map_layers[1]:
+            tile_pos = str_to_turple(tile)
+
+            if pos[0] - 96 <= tile_pos[0] * 48 <= pos[0] + 96 and pos[1] - 74 <= tile_pos[1] * 48 <= pos[1] + 74:
+                rect = pygame.Rect(tile_pos[0] * 48, tile_pos[1] * 48, 48, 48)
+                rects.append(rect)
+
+        return rects
+
+
 
     def render(self, surf, layer_n, tiles, camera_x):
         box_ani_num = self.box_ani.layer
