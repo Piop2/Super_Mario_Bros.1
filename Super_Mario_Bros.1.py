@@ -106,7 +106,7 @@ class Game:
         game_clear = False
 
         
-        small_coin = Animation(*load_animation("data/images/small_coin/OverWorld"))
+        small_coin = Animation(*load_animation(f"data/images/small_coin/{map_type}"))
         game_timer_s = pygame.time.get_ticks()
 
 
@@ -138,12 +138,13 @@ class Game:
 
         touched_blocks = []
 
-
+        block_break_partickle = Animation(*load_animation(f"data/images/particle/break_block/{map_type}"))
+        particles = []
         
 
         running = True
         while running:
-            dt = clock.tick(50)
+            dt = clock.tick(60)
 
 
             ### RENDER ###
@@ -159,9 +160,13 @@ class Game:
             for entity in entity_mob["entity"]["move"]:
                 entity.render(game_screen, camera_x)
 
+            mario.render(game_screen)
+
             level_map.render(game_screen, 1,  tile_data, camera_x)
 
-            mario.render(game_screen)
+            for particle in particles:
+                game_screen.blit(particle[0].get_img(), (particle[1][0] - camera_x, particle[1][1]))
+
 
             big_font.render(game_screen, "MARIO", (72, 24))
             big_font.render(game_screen, "{0:06}".format(self.score), (72, 48))
@@ -336,6 +341,12 @@ class Game:
                             try:
                                 level_map.del_tile_to_xy(x, y)
                             except KeyError: pass
+                            else:
+                                particles.append([block_break_partickle, [x * 48 + 24, y * 48 + 24], 20, 1, 0])
+                                particles.append([block_break_partickle, [x * 48 + 24, y * 48 + 24], 15, 1, 0])
+                                particles.append([block_break_partickle, [x * 48 + 24, y * 48 + 24], 20, -1, 0])
+                                particles.append([block_break_partickle, [x * 48 + 24, y * 48 + 24], 15, -1, 0])
+                                print("Add: particle")
                         elif block_num in [0, 1, 2]:
                             pass
                         else:
@@ -367,6 +378,16 @@ class Game:
 
                 if mario.pos[0] <= 0:
                     mario.pos[0] = 0
+
+                ### PARTICLE ###
+                for i, particle in enumerate(particles):
+                    particle[0].play(dt)
+                    particle[4] += GRAVITY
+                    particle[1][0] += 5 * particle[3]
+                    particle[1][1] += - particle[2] + particle[4]
+                    if particle[1][1] >= WINDOW_SIZE[1]:
+                        del particles[i]
+                        print("Delete: particle")
 
                 ### ENTITY & MOB ###
                 for i, entity in enumerate(entity_mob["entity"]["summon"]):
@@ -420,9 +441,6 @@ class Game:
                             up = True
                         if event.button == 1 or event.button == 2:
                             run = True
-                        if event.button == 7:
-                            game_clear = True
-                            running = False
 
                     if event.type == pygame.JOYBUTTONUP:
                         if event.button == 0 or event.button == 3:
@@ -461,6 +479,9 @@ class Game:
                             up = True
                         if event.key == pygame.K_RSHIFT:
                             run = True
+                        if event.key == pygame.K_e:
+                            game_clear = True
+                            running = False
 
                     if event.type == pygame.KEYUP:
                         if event.key == pygame.K_d:
@@ -687,9 +708,6 @@ class Game:
             
             big_font.render(game_screen, "TIME", (600, 24))
 
-            big_font.render(game_screen, "WORLD", (264, 216))
-            big_font.render(game_screen, self.level, (408, 216))
-
             big_font.render(game_screen, "TIME UP", (288, 360))
 
 
@@ -788,7 +806,7 @@ class Game:
 
         credits_text = [
             [("ORIGINAL GAME", 0), ("cNINTENDO   SUPER MARIO BROS.", 3), ("THIS GAME IS A REMAKE VERSION", 12), ("OF SUPER MARIO BROS. 1", 13)], # 원작, 리메이크
-            [("MAKER", 0), ("SEOUN       a SNGYN_P", 3), ("SHINBANPO    PARKHYUNWOO", 5)], # 제작
+            [("MAKER", 0), ("SEOUN          a SNGYN_P", 3), ("SHINBANPO    PARKHYUNWOO", 5)], # 제작
             [("RESORCE", 0), ("WEBSITE  SPRITERS-RESORCE.COM", 3), ("REFERENCE", 11), ("YOUTUBE  NENRIKIGAMINGCHANNEL", 14), ("YOUTUBE        DAFLUFFYPOTATO", 16)],
             [("REMAKE WITH PYTHON PYGAME", 7)]  # REMAKE WITH PYTHON
         ]
@@ -860,6 +878,7 @@ class Game:
                     self.time_up()
 
                 if self.life <= 0: # game over
+                    self.level_intro()
                     self.game_over()
                     running = False
 
