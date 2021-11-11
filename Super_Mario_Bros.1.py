@@ -31,6 +31,11 @@ MAP_BACKGROUND_COLOR = {
     "Castle" : (0, 0, 0)
 }
 
+big_font_order = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', 'x', '!', 'c', 'a', '_', '.']
+big_font = Font("data/font/big_font.png", (0, 0, 0), (0, 0, 0), big_font_order)
+colored_big_font = Font("data/font/big_font.png", (252, 252, 252), (252, 188, 176), big_font_order)
+
+
 def collision_test(rect,tiles):
     collisions = []
     for tile in tiles:
@@ -71,6 +76,7 @@ def move(rect,movement,tiles): # movement = [5,2]
 
 class Game:
     def __init__(self):
+        self.level = "1-1"
         self.life = 0
         self.score = 0
         self.coin = 0
@@ -78,7 +84,7 @@ class Game:
         self.time = 0
         return
 
-    def run_level(self, level):
+    def run_level(self):
         global screen, fullscreen
 
         tile_data = {}
@@ -90,7 +96,7 @@ class Game:
         mario = Mario()
 
 
-        level_map = Level.load(f'data/maps/{level}')
+        level_map = Level.load(f'data/maps/{self.level}')
         camera_x, map_size, mario.pos, map_type = level_map.get_start_data()
         map_size *= 48
 
@@ -98,6 +104,10 @@ class Game:
         pause = False
         game_over = False
         clear = False
+
+        
+        small_coin = Animation(*load_animation("data/images/small_coin/OverWorld"))
+        game_timer_s = pygame.time.get_ticks()
 
 
         entity_mob = {"entity": {"summon": [], "move": []}, "mob": []}
@@ -128,6 +138,9 @@ class Game:
 
         touched_blocks = []
 
+
+        
+
         running = True
         while running:
             dt = clock.tick(50)
@@ -150,14 +163,35 @@ class Game:
 
             mario.render(game_screen)
 
+            big_font.render(game_screen, "MARIO", (72, 24))
+            big_font.render(game_screen, "{0:06}".format(self.score), (72, 48))
+
+            game_screen.blit(small_coin.get_img(), (264, 48))
+            big_font.render(game_screen, "x{0:02}".format(self.coin), (288, 48))
+            
+            big_font.render(game_screen, "WORLD", (432, 24))
+            big_font.render(game_screen, self.level, (456, 48))
+            
+            big_font.render(game_screen, "TIME", (600, 24))
+            big_font.render(game_screen, "{0:03}".format(self.time), (624, 48))
+
             screen.fill((0, 0, 0))
             if fullscreen:
                 screen.blit(game_screen, ((monitor_size[0] / 2) - (WINDOW_SIZE[0] / 2), (monitor_size[1] / 2) - (WINDOW_SIZE[1] / 2)))
             else:
                 screen.blit(game_screen, (0, 0))
-                
+            
+            small_coin.play(dt)
 
             if not pause:
+                ### GAME ###
+                game_timer_e = pygame.time.get_ticks()
+                if game_timer_e - game_timer_s >= 1000:
+                    self.time -= 1
+                    game_timer_s = game_timer_e
+                    if self.time <= -1:
+                        running = False
+
                 ### ANIMATION ###
                 level_map.play_box(dt)
 
@@ -473,15 +507,11 @@ class Game:
         mario_img = load_img("data/images/title_mario.png")
         map_img = load_img("data/images/title_map.png")
         pointer = load_img("data/images/title_pointer.png")
-        coin_img = load_img("data/images/title_coin.png")
+        small_coin = Animation(*load_animation("data/images/small_coin/OverWorld"))
 
         pointer_y = [408, 456]
         select_num = 0
 
-        big_font_order = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-', 'x', '!', 'c', 'a', '_', '.']
-
-        big_font = Font("data/font/big_font.png", (0, 0, 0), (0, 0, 0), big_font_order)
-        colored_big_font = Font("data/font/big_font.png", (252, 252, 252), (252, 188, 176), big_font_order)
         colored_text = "c2021 SEOUN"
 
         running = True
@@ -495,6 +525,18 @@ class Game:
             game_screen.blit(pointer, (216, pointer_y[select_num]))
 
             # text
+
+            big_font.render(game_screen, "MARIO", (72, 24))
+            big_font.render(game_screen, "000000", (72, 48))
+
+            game_screen.blit(small_coin.get_img(), (264, 48))
+            big_font.render(game_screen, "x00", (288, 48))
+            
+            big_font.render(game_screen, "WORLD", (432, 24))
+            big_font.render(game_screen, "1-1", (456, 48))
+            
+            big_font.render(game_screen, "TIME", (600, 24))
+
 
             big_font.render(game_screen, "1 PLAYER GAME", (264, 408))
             if select_num == 1:
@@ -512,6 +554,8 @@ class Game:
             else:
                 screen.blit(game_screen, (0, 0))
 
+
+            small_coin.play(dt)
 
             ### EVENT ###
             for event in pygame.event.get():
@@ -555,10 +599,239 @@ class Game:
             pygame.display.update()
         return
 
+    def level_intro(self):
+        global screen, fullscreen
+
+        small_coin = load_img("data/images/small_coin/UnderGround/0.png")
+        mario_img = load_img("data/images/title_mario.png")
+
+        start_time = pygame.time.get_ticks()
+
+        running = True
+        while running:
+            dt = clock.tick(10) # 괜히 여기서 뻑가지 않게 프레임 드랍
+            game_screen.fill((0, 0, 0))
+
+            big_font.render(game_screen, "MARIO", (72, 24))
+            big_font.render(game_screen, "{0:06}".format(self.score), (72, 48))
+
+            game_screen.blit(small_coin, (264, 48))
+            big_font.render(game_screen, "x{0:02}".format(self.coin), (288, 48))
+            
+            big_font.render(game_screen, "WORLD", (432, 24))
+            big_font.render(game_screen, self.level, (456, 48))
+            
+            big_font.render(game_screen, "TIME", (600, 24))
+
+            big_font.render(game_screen, "WORLD", (264, 216))
+            big_font.render(game_screen, self.level, (408, 216))
+
+            game_screen.blit(mario_img, (288, 291))
+            big_font.render(game_screen, "x {}".format(str(self.life).rjust(2, " ")), (360, 315))
 
 
 
+            end_time = pygame.time.get_ticks()
+            if end_time - start_time >= 2000:
+                running = False
+            
 
+            
+            screen.fill((0, 0, 0))
+            if fullscreen:
+                screen.blit(game_screen, ((monitor_size[0] / 2) - (WINDOW_SIZE[0] / 2), (monitor_size[1] / 2) - (WINDOW_SIZE[1] / 2)))
+            else:
+                screen.blit(game_screen, (0, 0))
+
+            ### EVENT ###
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                
+                if event.type == pygame.KEYDOWN:
+
+                    if event.key == pygame.K_f:
+                        fullscreen = not fullscreen
+                        if fullscreen:
+                            pygame.display.set_mode(monitor_size, pygame.FULLSCREEN)
+                        else:
+                            screen = pygame.display.set_mode(WINDOW_SIZE)
+                
+            pygame.display.update()
+        return
+
+    def time_up(self):
+        global screen, fullscreen
+
+        small_coin = load_img("data/images/small_coin/UnderGround/0.png")
+
+        start_time = pygame.time.get_ticks()
+
+        running = True
+        while running:
+            dt = clock.tick(10) # 괜히 여기서 뻑가지 않게 프레임 드랍
+            game_screen.fill((0, 0, 0))
+
+            big_font.render(game_screen, "MARIO", (72, 24))
+            big_font.render(game_screen, "{0:06}".format(self.score), (72, 48))
+
+            game_screen.blit(small_coin, (264, 48))
+            big_font.render(game_screen, "x{0:02}".format(self.coin), (288, 48))
+            
+            big_font.render(game_screen, "WORLD", (432, 24))
+            big_font.render(game_screen, self.level, (456, 48))
+            
+            big_font.render(game_screen, "TIME", (600, 24))
+
+            big_font.render(game_screen, "WORLD", (264, 216))
+            big_font.render(game_screen, self.level, (408, 216))
+
+            big_font.render(game_screen, "TIME UP", (288, 360))
+
+
+            end_time = pygame.time.get_ticks()
+            if end_time - start_time >= 2000:
+                running = False
+            
+
+            
+            screen.fill((0, 0, 0))
+            if fullscreen:
+                screen.blit(game_screen, ((monitor_size[0] / 2) - (WINDOW_SIZE[0] / 2), (monitor_size[1] / 2) - (WINDOW_SIZE[1] / 2)))
+            else:
+                screen.blit(game_screen, (0, 0))
+
+            ### EVENT ###
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                
+                if event.type == pygame.KEYDOWN:
+
+                    if event.key == pygame.K_f:
+                        fullscreen = not fullscreen
+                        if fullscreen:
+                            pygame.display.set_mode(monitor_size, pygame.FULLSCREEN)
+                        else:
+                            screen = pygame.display.set_mode(WINDOW_SIZE)
+                
+            pygame.display.update()
+        return
+
+    def game_over(self):
+        global screen, fullscreen
+
+        small_coin = load_img("data/images/small_coin/UnderGround/0.png")
+
+        start_time = pygame.time.get_ticks()
+
+        running = True
+        while running:
+            dt = clock.tick(10) # 괜히 여기서 뻑가지 않게 프레임 드랍
+            game_screen.fill((0, 0, 0))
+
+            big_font.render(game_screen, "MARIO", (72, 24))
+            big_font.render(game_screen, "{0:06}".format(self.score), (72, 48))
+
+            game_screen.blit(small_coin, (264, 48))
+            big_font.render(game_screen, "x{0:02}".format(self.coin), (288, 48))
+            
+            big_font.render(game_screen, "WORLD", (432, 24))
+            big_font.render(game_screen, self.level, (456, 48))
+            
+            big_font.render(game_screen, "TIME", (600, 24))
+
+            big_font.render(game_screen, "MARIO", (312, 312))
+            big_font.render(game_screen, "GAME OVER", (264, 360))
+
+
+            end_time = pygame.time.get_ticks()
+            if end_time - start_time >= 2000:
+                running = False
+            
+
+            
+            screen.fill((0, 0, 0))
+            if fullscreen:
+                screen.blit(game_screen, ((monitor_size[0] / 2) - (WINDOW_SIZE[0] / 2), (monitor_size[1] / 2) - (WINDOW_SIZE[1] / 2)))
+            else:
+                screen.blit(game_screen, (0, 0))
+
+            ### EVENT ###
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                
+                if event.type == pygame.KEYDOWN:
+
+                    if event.key == pygame.K_f:
+                        fullscreen = not fullscreen
+                        if fullscreen:
+                            pygame.display.set_mode(monitor_size, pygame.FULLSCREEN)
+                        else:
+                            screen = pygame.display.set_mode(WINDOW_SIZE)
+                
+            pygame.display.update()
+        return
+
+    def show_credits(self):
+        global screen, fullscreen
+
+        start_time = pygame.time.get_ticks()
+
+
+        credits_text = [
+            [("ORIGINAL GAME", 0), ("cNINTENDO   SUPER MARIO BROS.", 3), ("THIS GAME IS A REMAKE VERSION", 12), ("OF SUPER MARIO BROS. 1", 13)], # 원작, 리메이크
+            [("MAKER", 0), ("SEOUN       YOUSEUNGYOUN", 3), ("SHINBANPO    PARKHYUNWOO", 5)], # 제작
+            [("RESORCE", 0), ("SPRITERS-RESORCE.COM", 3), ("REFERENCE", 11), ("NENRIKI GAMING CHANNEL", 14), ("DAFLUFFYPOTATO", 16)],
+            [("REMAKE WITH PYTHON PYGAME", 7)]  # REMAKE WITH PYTHON
+        ]
+        credits_n = 0
+
+        running = True
+        while running:
+            dt = clock.tick(50) # 괜히 여기서 뻑가지 않게 프레임 드랍
+            game_screen.fill((0, 0, 0))
+
+            for (text, line) in credits_text[credits_n]:
+                big_font.render(game_screen, text, ((WINDOW_SIZE[0] / 2) - (big_font.width(text) / 2), 150 + line * 24))
+
+            
+            screen.fill((0, 0, 0))
+            if fullscreen:
+                screen.blit(game_screen, ((monitor_size[0] / 2) - (WINDOW_SIZE[0] / 2), (monitor_size[1] / 2) - (WINDOW_SIZE[1] / 2)))
+            else:
+                screen.blit(game_screen, (0, 0))
+
+            end_time = pygame.time.get_ticks()
+            if end_time - start_time >= 4000:
+                credits_n += 1
+                start_time = end_time
+            
+            if credits_n >= len(credits_text):
+                running = False
+
+
+            ### EVENT ###
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                
+                if event.type == pygame.KEYDOWN:
+
+                    if event.key == pygame.K_f:
+                        fullscreen = not fullscreen
+                        if fullscreen:
+                            pygame.display.set_mode(monitor_size, pygame.FULLSCREEN)
+                        else:
+                            screen = pygame.display.set_mode(WINDOW_SIZE)
+                
+            pygame.display.update()
+        return
 
 
     def main(self):
@@ -570,21 +843,23 @@ class Game:
         running = True
         while running:
             # level intro
-
+            self.time = 300
+            self.level_intro()
             # game start
-            game_clear = self.run_level("1-1")
+            game_clear = self.run_level()
             if game_clear:
-                pass
+                self.show_credits()
             else:
                 self.life -= 1
 
                 if self.time <= 0: # time up
-                    pass
+                    self.time_up()
 
                 if self.life <= 0: # game over
-                    pass
+                    self.game_over()
+                    running = False
 
-                running = False
+                
         return self.main()
 
 

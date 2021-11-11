@@ -25,7 +25,7 @@ class Font:
     def __init__(self, path, target_color, color, font_order):
         self.letters, self.letter_spacing, self.line_height = load_font_img(path, target_color, color)
         self.font_order = font_order
-        self.space_width = 24
+        self.space_width = self.letter_spacing[0]
         self.base_spacing = 1
     
     def width(self, text):
@@ -33,6 +33,8 @@ class Font:
         for char in text:
             if char == ' ':
                 text_width += self.space_width + self.base_spacing
+            elif char == '\n':
+                pass
             else:
                 text_width += self.letter_spacing[self.font_order.index(char)] + self.base_spacing
         return text_width
