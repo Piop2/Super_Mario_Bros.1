@@ -785,11 +785,11 @@ class Game:
 
         credits_text = [
             [("ORIGINAL GAME", 0), ("cNINTENDO   SUPER MARIO BROS.", 3), ("THIS GAME IS A REMAKE VERSION", 12), ("OF SUPER MARIO BROS. 1", 13)], # 원작, 리메이크
-            [("MAKER", 0), ("SEOUN       YOUSEUNGYOUN", 3), ("SHINBANPO    PARKHYUNWOO", 5)], # 제작
-            [("RESORCE", 0), ("SPRITERS-RESORCE.COM", 3), ("REFERENCE", 11), ("NENRIKI GAMING CHANNEL", 14), ("DAFLUFFYPOTATO", 16)],
+            [("MAKER", 0), ("SEOUN       YOUSEUNGYOUN", 3), ("SHINBANPO    PARKHYUNWOO", 5), ("", 7)], # 제작
+            [("RESORCE", 0), ("WEBSITE  SPRITERS-RESORCE.COM", 3), ("REFERENCE", 11), ("YOUTUBE  NENRIKIGAMINGCHANNEL", 14), ("YOUTUBE        DAFLUFFYPOTATO", 16)],
             [("REMAKE WITH PYTHON PYGAME", 7)]  # REMAKE WITH PYTHON
         ]
-        credits_n = 0
+        credits_n = 2
 
         running = True
         while running:
@@ -806,13 +806,13 @@ class Game:
             else:
                 screen.blit(game_screen, (0, 0))
 
-            end_time = pygame.time.get_ticks()
-            if end_time - start_time >= 4000:
-                credits_n += 1
-                start_time = end_time
+            # end_time = pygame.time.get_ticks()
+            # if end_time - start_time >= 4000:
+            #     credits_n += 1
+            #     start_time = end_time
             
-            if credits_n >= len(credits_text):
-                running = False
+            # if credits_n >= len(credits_text):
+            #     running = False
 
 
             ### EVENT ###
@@ -835,32 +835,33 @@ class Game:
 
 
     def main(self):
-        self.life = 1
+        self.show_credits()
+        # self.life = 1
 
-        # title screen
-        self.title_screen()
+        # # title screen
+        # self.title_screen()
 
-        running = True
-        while running:
-            # level intro
-            self.time = 300
-            self.level_intro()
-            # game start
-            game_clear = self.run_level()
-            if game_clear:
-                self.show_credits()
-            else:
-                self.life -= 1
+        # running = True
+        # while running:
+        #     # level intro
+        #     self.time = 300
+        #     self.level_intro()
+        #     # game start
+        #     game_clear = self.run_level()
+        #     if game_clear:
+        #         self.show_credits()
+        #     else:
+        #         self.life -= 1
 
-                if self.time <= 0: # time up
-                    self.time_up()
+        #         if self.time <= 0: # time up
+        #             self.time_up()
 
-                if self.life <= 0: # game over
-                    self.game_over()
-                    running = False
+        #         if self.life <= 0: # game over
+        #             self.game_over()
+        #             running = False
 
                 
-        return self.main()
+        # return self.main()
 
 
 if __name__=="__main__":
