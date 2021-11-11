@@ -792,7 +792,7 @@ class Game:
             [("RESORCE", 0), ("WEBSITE  SPRITERS-RESORCE.COM", 3), ("REFERENCE", 11), ("YOUTUBE  NENRIKIGAMINGCHANNEL", 14), ("YOUTUBE        DAFLUFFYPOTATO", 16)],
             [("REMAKE WITH PYTHON PYGAME", 7)]  # REMAKE WITH PYTHON
         ]
-        credits_n = 2
+        credits_n = 0
 
         running = True
         while running:
