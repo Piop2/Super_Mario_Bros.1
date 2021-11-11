@@ -114,6 +114,9 @@ class Game:
         ### mario ###
         up = False
         steel_up = False
+        down = False
+        push_down = False
+        push_down_timer = 0
         right = False
         left = False
         run = False
@@ -123,8 +126,7 @@ class Game:
         run_timer = 0
         WALK_SPEED = 4
         RUN_SPEED = 6
-        # SMALL_JUMP = 18
-        # BIG_JUMP = 18
+        
         JUMP = 17
         gravity_acc = 0
         jump = 0
@@ -159,6 +161,9 @@ class Game:
                 game_screen.blit(erase, (entity[1][0] * 48 - camera_x, entity[1][1] * 48))
             for entity in entity_mob["entity"]["move"]:
                 entity.render(game_screen, camera_x)
+
+            level_map.render(game_screen, 2,  tile_data, camera_x)
+            level_map.render(game_screen, 3,  tile_data, camera_x)
 
             mario.render(game_screen)
 
@@ -205,102 +210,121 @@ class Game:
                 blocks_rect = level_map.get_rects(camera_x, mario.pos)
                 gravity_acc += GRAVITY
 
-                if right:
-                    mario.look_right()
-
-                    if run_l and not left and on_block and \
-                            not change_direction and pygame.time.get_ticks() - run_timer >= 1000:
-
-                        run_r = True
-                        run_l = False
-                        change_direction = True
-                        mario_move[0] = - RUN_SPEED
-                    if change_direction and run_r:
-                        if mario_move[0] > 0:
-                            change_direction = False
-
-                    if not run:
-                        mario_move[0] += WALK_SPEED
-                    elif change_direction:
-                        mario_move[0] += 0.5
-                    else:
-                        mario_move[0] += RUN_SPEED
-
-                    if not change_direction:
-                        mario.status[1] = "walk"
-                    else:
-                        mario.status[1] = "change_direction"
-                if left:
-                    mario.look_left()
-
-                    if run_r and not right and on_block and \
-                            not change_direction and pygame.time.get_ticks() - run_timer >= 1000:
-
-                        run_r = False
-                        run_l = True
-                        change_direction = True
-                        mario_move[0] = RUN_SPEED
-                    if change_direction and run_l:
-                        if mario_move[0] < 0:
-                            change_direction = False
-
-                    if not run:
-                        mario_move[0] -= WALK_SPEED
-                    elif change_direction:
-                        mario_move[0] -= 0.5
-                    else:
-                        mario_move[0] -= RUN_SPEED
-
-                    if not change_direction:
-                        mario.status[1] = "walk"
-                    else:
-                        mario.status[1] = "change_direction"
-
-                if run and not change_direction:
-                    mario.status[1] = "run"
+                if not push_down:
                     if right:
-                        if not run_r:
-                            run_timer = pygame.time.get_ticks()
-                        run_r = True
-                        run_l = False
-                    else:
-                        if not run_l:
-                            run_timer = pygame.time.get_ticks()
+                        mario.look_right()
+
+                        if run_l and not left and on_block and \
+                                not change_direction and pygame.time.get_ticks() - run_timer >= 1000:
+
+                            run_r = True
+                            run_l = False
+                            change_direction = True
+                            mario_move[0] = - RUN_SPEED
+                        if change_direction and run_r:
+                            if mario_move[0] > 0:
+                                change_direction = False
+
+                        if not run:
+                            mario_move[0] += WALK_SPEED
+                        elif change_direction:
+                            mario_move[0] += 0.5
+                        else:
+                            mario_move[0] += RUN_SPEED
+
+                        if not change_direction:
+                            mario.status[1] = "walk"
+                        else:
+                            mario.status[1] = "change_direction"
+                    if left:
+                        mario.look_left()
+
+                        if run_r and not right and on_block and \
+                                not change_direction and pygame.time.get_ticks() - run_timer >= 1000:
+
+                            run_r = False
+                            run_l = True
+                            change_direction = True
+                            mario_move[0] = RUN_SPEED
+                        if change_direction and run_l:
+                            if mario_move[0] < 0:
+                                change_direction = False
+
+                        if not run:
+                            mario_move[0] -= WALK_SPEED
+                        elif change_direction:
+                            mario_move[0] -= 0.5
+                        else:
+                            mario_move[0] -= RUN_SPEED
+
+                        if not change_direction:
+                            mario.status[1] = "walk"
+                        else:
+                            mario.status[1] = "change_direction"
+
+                    if run and not change_direction:
+                        mario.status[1] = "run"
+                        if right:
+                            if not run_r:
+                                run_timer = pygame.time.get_ticks()
+                            run_r = True
+                            run_l = False
+                        else:
+                            if not run_l:
+                                run_timer = pygame.time.get_ticks()
+                            run_r = False
+                            run_l = True
+
+                    if up:
+                        if on_block:
+                            jump = - JUMP
+                            steel_up = True
+                        else:
+                            if -1 <= jump + gravity_acc <= 1:
+                                steel_up = False
+
+                    if not on_block:
+                        mario.status[1] = "jump"
+
+                    if not jump and right == False and left == False and up == False:
+                        mario.status[1] = "idle"
+                        change_direction = False
                         run_r = False
-                        run_l = True
+                        run_l = False
 
-                if up:
-                    if on_block:
-                        jump = - JUMP
-                        steel_up = True
+                    if mario.pos[1] >= WINDOW_SIZE[1]:
+                        pause = True
+                        game_over = True
+                        gravity_acc = 0
+                        jump = - 20
+                        steel_up = False
+                        pygame.time.delay(1000)
+
+                    mario.play_ani(dt)
+
+                    if gravity_acc <= 1: gravity_acc = 1
+                    if bounce:
+                        mario_move[1] += gravity_acc
                     else:
-                        if -1 <= jump + gravity_acc <= 1:
-                            steel_up = False
-
-                if not on_block:
-                    mario.status[1] = "jump"
-
-                if not jump and right == False and left == False and up == False:
-                    mario.status[1] = "idle"
-                    change_direction = False
-                    run_r = False
-                    run_l = False
-
-                if mario.pos[1] >= WINDOW_SIZE[1]:
-                    pause = True
-                    game_over = True
-                    gravity_acc = 0
-                    jump = - 20
+                        mario_move[1] += jump + gravity_acc
+                else: # push down
+                    
                     steel_up = False
-                    pygame.time.delay(1000)
+                    right = False
+                    left = False
+                    run = False
+                    run_r = True
+                    run_l = True
+                    change_direction = False
+                    gravity_acc = 0
+                    jump = 0
+                    touch_ceiling = False
+                    bounce = False
+                    mario.status[1] = "push_wait"
 
-                mario.play_ani(dt)
-
-                if gravity_acc <= 1: gravity_acc = 1
-                if bounce:
-                    mario_move[1] += gravity_acc
-                else:
-                    mario_move[1] += jump + gravity_acc
+                    if pygame.time.get_ticks() - push_down_timer >= 300:
+                        mario.status[1] = "push_down"
+                        mario_move = [0, 22]
 
                 rect, (touch_ceiling, block_u), (on_block, _), (_, _), (_, _) = move(mario.rect, mario_move, blocks_rect)
                 mario.pos = [rect.x, rect.y]
@@ -374,6 +398,8 @@ class Game:
                     jump = 0
                     gravity_acc = 0
                     bounce = False
+                    down = False
+                    push_down = False
                 if touch_ceiling: bounce = True
 
                 if mario.pos[0] <= 0:
@@ -477,6 +503,11 @@ class Game:
                             left = True
                         if event.key == pygame.K_w:
                             up = True
+                        if event.key == pygame.K_s:
+                            down = True
+                            if on_block == False and down:
+                                push_down = True
+                                push_down_timer = pygame.time.get_ticks()
                         if event.key == pygame.K_RSHIFT:
                             run = True
                         if event.key == pygame.K_e:

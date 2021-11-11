@@ -13,12 +13,11 @@ def str_to_turple(s):
 
 def tuple_to_str(t):
     return f"{t[0]}.{t[1]}"
-
 class Level:
     def __init__(self, level_data, maps):
         self.level_data = level_data
         self.maps = maps
-        self._map_name = level_data["mapPath"][0]
+        self._map_name = list(level_data.keys())[0]
         return
 
     @property
@@ -35,8 +34,8 @@ class Level:
         level_data = read_f(f"{path}/config.json")
 
         maps = {}
-        for map_path in level_data["mapPath"]:
-            maps[map_path.split('.')[0]] = Map(read_f(f"{path}/{map_path.split('.')[0]}.json"))
+        for map_path in level_data:
+            maps[map_path] = Map(read_f(f"{path}/{map_path}.json"))
 
         return Level(level_data, maps)
 
@@ -66,6 +65,9 @@ class Level:
     def del_tile_to_xy(self, x, y):
         self.maps[self.map_name].del_tile_to_xy(x, y)
         return
+
+    def find_block_to_xy(self, x, y, camera_x):
+        return self.maps[self.map_name].find_block(int((x + camera_x) / 48), int(y / 48))
 
     def render(self, surf, layer_n, tiles, camera_x):
         self.maps[self.map_name].render(surf, layer_n, tiles, camera_x)
