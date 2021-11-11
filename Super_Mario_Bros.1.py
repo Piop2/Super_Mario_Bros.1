@@ -788,7 +788,7 @@ class Game:
 
         credits_text = [
             [("ORIGINAL GAME", 0), ("cNINTENDO   SUPER MARIO BROS.", 3), ("THIS GAME IS A REMAKE VERSION", 12), ("OF SUPER MARIO BROS. 1", 13)], # 원작, 리메이크
-            [("MAKER", 0), ("SEOUN       YOUSEUNGYOUN", 3), ("SHINBANPO    PARKHYUNWOO", 5), ("", 7)], # 제작
+            [("MAKER", 0), ("SEOUN       a SNGYN_P", 3), ("SHINBANPO    PARKHYUNWOO", 5)], # 제작
             [("RESORCE", 0), ("WEBSITE  SPRITERS-RESORCE.COM", 3), ("REFERENCE", 11), ("YOUTUBE  NENRIKIGAMINGCHANNEL", 14), ("YOUTUBE        DAFLUFFYPOTATO", 16)],
             [("REMAKE WITH PYTHON PYGAME", 7)]  # REMAKE WITH PYTHON
         ]
@@ -852,6 +852,7 @@ class Game:
             game_clear = self.run_level()
             if game_clear:
                 self.show_credits()
+                running = False
             else:
                 self.life -= 1
 
