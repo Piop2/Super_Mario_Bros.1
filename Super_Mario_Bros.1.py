@@ -103,7 +103,7 @@ class Game:
         GRAVITY = 0.7
         pause = False
         game_over = False
-        clear = False
+        game_clear = False
 
         
         small_coin = Animation(*load_animation("data/images/small_coin/OverWorld"))
@@ -420,6 +420,9 @@ class Game:
                             up = True
                         if event.button == 1 or event.button == 2:
                             run = True
+                        if event.button == 7:
+                            game_clear = True
+                            running = False
 
                     if event.type == pygame.JOYBUTTONUP:
                         if event.button == 0 or event.button == 3:
@@ -499,7 +502,7 @@ class Game:
 
             pygame.display.update()
         
-        return clear
+        return game_clear
 
     def title_screen(self):
         global screen, fullscreen
@@ -806,13 +809,13 @@ class Game:
             else:
                 screen.blit(game_screen, (0, 0))
 
-            # end_time = pygame.time.get_ticks()
-            # if end_time - start_time >= 4000:
-            #     credits_n += 1
-            #     start_time = end_time
+            end_time = pygame.time.get_ticks()
+            if end_time - start_time >= 4000:
+                credits_n += 1
+                start_time = end_time
             
-            # if credits_n >= len(credits_text):
-            #     running = False
+            if credits_n >= len(credits_text):
+                running = False
 
 
             ### EVENT ###
@@ -835,33 +838,32 @@ class Game:
 
 
     def main(self):
-        self.show_credits()
-        # self.life = 1
+        self.life = 1
 
-        # # title screen
-        # self.title_screen()
+        # title screen
+        self.title_screen()
 
-        # running = True
-        # while running:
-        #     # level intro
-        #     self.time = 300
-        #     self.level_intro()
-        #     # game start
-        #     game_clear = self.run_level()
-        #     if game_clear:
-        #         self.show_credits()
-        #     else:
-        #         self.life -= 1
+        running = True
+        while running:
+            # level intro
+            self.time = 300
+            self.level_intro()
+            # game start
+            game_clear = self.run_level()
+            if game_clear:
+                self.show_credits()
+            else:
+                self.life -= 1
 
-        #         if self.time <= 0: # time up
-        #             self.time_up()
+                if self.time <= 0: # time up
+                    self.time_up()
 
-        #         if self.life <= 0: # game over
-        #             self.game_over()
-        #             running = False
+                if self.life <= 0: # game over
+                    self.game_over()
+                    running = False
 
                 
-        # return self.main()
+        return self.main()
 
 
 if __name__=="__main__":
