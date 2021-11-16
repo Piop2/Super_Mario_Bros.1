@@ -35,6 +35,8 @@ big_font_order = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M
 big_font = Font("data/font/big_font.png", (0, 0, 0), (0, 0, 0), big_font_order)
 colored_big_font = Font("data/font/big_font.png", (252, 252, 252), (252, 188, 176), big_font_order)
 
+score_font = Font("data/font/score_font.png", (0, 0, 0), (0, 0, 0), ['0', '1', '2', '4', '5', '8'])
+
 
 def collision_test(rect,tiles):
     collisions = []
@@ -100,7 +102,7 @@ class Game:
         camera_x, map_size, mario.pos, map_type = level_map.get_start_data()
         map_size *= 48
 
-        GRAVITY = 0.7
+        GRAVITY = 0.6
         pause = False
         game_over = False
         game_clear = False
@@ -111,26 +113,25 @@ class Game:
 
 
         entity_mob = {"entity": {"summon": [], "move": []}, "mob": []}
+        # for en_m_pos, en_m_type in level_map.get_entity_mob():
+        #     en_m_pos = tuple(map(int, en_m_pos.split(".")))
+        #     if
+        #  
+            
         ### mario ###
         up = False
         steel_up = False
         down = False
-        push_down = False
-        push_down_timer = 0
         right = False
         left = False
         run = False
-        run_r = True
-        run_l = True
-        change_direction = False
-        run_timer = 0
-        WALK_SPEED = 4
-        RUN_SPEED = 6
         
         JUMP = 17
         gravity_acc = 0
         jump = 0
         mario_move = [0, 0]
+        WALK_SPEED = 4
+        RUN_SPEED = 6
         mario.check_rect()
 
         on_block = True
@@ -165,9 +166,8 @@ class Game:
             level_map.render(game_screen, 2,  tile_data, camera_x)
             level_map.render(game_screen, 3,  tile_data, camera_x)
 
-            mario.render(game_screen)
-
             level_map.render(game_screen, 1,  tile_data, camera_x)
+            mario.render(game_screen)
 
             for particle in particles:
                 game_screen.blit(particle[0].get_img(), (particle[1][0] - camera_x, particle[1][1]))
@@ -175,6 +175,7 @@ class Game:
 
             big_font.render(game_screen, "MARIO", (72, 24))
             big_font.render(game_screen, "{0:06}".format(self.score), (72, 48))
+            # big_font.render(game_screen, f"FPS_{int(clock.get_fps())}", (72, 72))
 
             game_screen.blit(small_coin.get_img(), (264, 48))
             big_font.render(game_screen, "x{0:02}".format(self.coin), (288, 48))
@@ -206,132 +207,85 @@ class Game:
                 level_map.play_box(dt)
 
                 ### MARIO ###
-                mario.check_rect()
-                blocks_rect = level_map.get_rects(camera_x, mario.pos)
                 gravity_acc += GRAVITY
 
-                if not push_down:
+                ## MARIO CONTRAL ###
+                if on_block:
                     if right:
-                        mario.look_right()
-
-                        if run_l and not left and on_block and \
-                                not change_direction and pygame.time.get_ticks() - run_timer >= 1000:
-
-                            run_r = True
-                            run_l = False
-                            change_direction = True
-                            mario_move[0] = - RUN_SPEED
-                        if change_direction and run_r:
-                            if mario_move[0] > 0:
-                                change_direction = False
-
-                        if not run:
-                            mario_move[0] += WALK_SPEED
-                        elif change_direction:
-                            mario_move[0] += 0.5
+                        if mario_move[0] < -2:
+                            mario_move[0] += 0.05
+                        elif run:
+                            mario_move[0] = mario_move[0] + 1 if mario_move[0] <= RUN_SPEED else RUN_SPEED
                         else:
-                            mario_move[0] += RUN_SPEED
-
-                        if not change_direction:
-                            mario.status[1] = "walk"
-                        else:
-                            mario.status[1] = "change_direction"
+                            mario_move[0] = mario_move[0] + 1 if mario_move[0] <= WALK_SPEED else WALK_SPEED
                     if left:
-                        mario.look_left()
-
-                        if run_r and not right and on_block and \
-                                not change_direction and pygame.time.get_ticks() - run_timer >= 1000:
-
-                            run_r = False
-                            run_l = True
-                            change_direction = True
-                            mario_move[0] = RUN_SPEED
-                        if change_direction and run_l:
-                            if mario_move[0] < 0:
-                                change_direction = False
-
-                        if not run:
-                            mario_move[0] -= WALK_SPEED
-                        elif change_direction:
-                            mario_move[0] -= 0.5
+                        if mario_move[0] > 2:
+                            mario_move[0] -= 0.05
+                        elif run:
+                            mario_move[0] = mario_move[0] - 1 if - mario_move[0] <= RUN_SPEED else - RUN_SPEED
                         else:
-                            mario_move[0] -= RUN_SPEED
+                            mario_move[0] = mario_move[0] - 1 if - mario_move[0] <= WALK_SPEED else - WALK_SPEED
 
-                        if not change_direction:
-                            mario.status[1] = "walk"
-                        else:
-                            mario.status[1] = "change_direction"
+                if up and (on_block or jump):
+                    jump = jump + 3  if jump + 3 < JUMP else JUMP
+                    # jump = JUMP
+                
 
-                    if run and not change_direction:
+                if not jump and right == False and left == False and up == False:
+                    if -0.4 <= mario_move[0] <= 0.4:
+                        mario_move[0] = 0
+                    if abs(mario_move[0]) > 0:
+                        mario_move[0] += -0.4 if mario_move[0] > 0 else +0.4
+
+
+                ### MARIO STATUS ###
+                if ((left and mario_move[0] > 2) or (right and mario_move[0] < - 2)) and not (right and left):
+                    mario_move[0] += -0.3 if mario_move[0] > 0 else +0.3
+                    mario.status[1] = "turn"
+                else:
+                    if run:
                         mario.status[1] = "run"
-                        if right:
-                            if not run_r:
-                                run_timer = pygame.time.get_ticks()
-                            run_r = True
-                            run_l = False
-                        else:
-                            if not run_l:
-                                run_timer = pygame.time.get_ticks()
-                            run_r = False
-                            run_l = True
-
-                    if up:
-                        if on_block:
-                            jump = - JUMP
-                            steel_up = True
-                        else:
-                            if -1 <= jump + gravity_acc <= 1:
-                                steel_up = False
-
-                    if not on_block:
-                        mario.status[1] = "jump"
-
-                    if not jump and right == False and left == False and up == False:
-                        mario.status[1] = "idle"
-                        change_direction = False
-                        run_r = False
-                        run_l = False
-
-                    if mario.pos[1] >= WINDOW_SIZE[1]:
-                        pause = True
-                        game_over = True
-                        gravity_acc = 0
-                        jump = - 20
-                        steel_up = False
-                        pygame.time.delay(1000)
-
-                    mario.play_ani(dt)
-
-                    if gravity_acc <= 1: gravity_acc = 1
-                    if bounce:
-                        mario_move[1] += gravity_acc
                     else:
-                        mario_move[1] += jump + gravity_acc
-                else: # push down
-                    
-                    steel_up = False
-                    right = False
-                    left = False
-                    run = False
-                    run_r = True
-                    run_l = True
-                    change_direction = False
+                        mario.status[1] = "walk"
+
+                if mario_move[0] == 0:
+                    mario.status[1] = "idle"
+                elif mario_move[0] > 0:
+                    mario.look_right()
+                else:
+                    mario.look_left()
+                
+                if not on_block:
+                    mario.status[1] = "jump"
+
+                
+
+
+                if mario.pos[1] >= WINDOW_SIZE[1]:
+                    pause = True
+                    game_over = True
                     gravity_acc = 0
-                    jump = 0
-                    touch_ceiling = False
-                    bounce = False
-                    mario.status[1] = "push_wait"
+                    jump = - 20
+                    steel_up = False
+                    pygame.time.delay(1000)
+                mario.play_ani(dt)
 
-                    if pygame.time.get_ticks() - push_down_timer >= 300:
-                        mario.status[1] = "push_down"
-                        mario_move = [0, 22]
-
+                if gravity_acc <= 1:
+                    gravity_acc = 1
+                if bounce:
+                    mario_move[1] = gravity_acc
+                else:
+                    mario_move[1] = - jump + gravity_acc
+            
+                mario.check_rect()
+                blocks_rect = level_map.get_rects(camera_x, mario.pos)    
                 rect, (touch_ceiling, block_u), (on_block, _), (_, _), (_, _) = move(mario.rect, mario_move, blocks_rect)
                 mario.pos = [rect.x, rect.y]
 
                 if not block_u == None:
+                    bounce = True
                     on_block = False
-                    steel_up = False
+                    tile, x, y = level_map.set_offset_tile(block_u.x, block_u.y, camera_x, [0, 0])
                     try:
                         tile, x, y = level_map.set_offset_tile(block_u.x, block_u.y, camera_x, [0, 0])
                     except KeyError:
@@ -360,8 +314,7 @@ class Game:
                             entity_mob["entity"]["summon"].append([entity, (x, y)])
                             
 
-
-                        if block_num in [3, 4] and not len(tile) >= 4:
+                        if block_num in [3, 4] and not len(tile) >= 4 and mario.status[0] == 'big':
                             try:
                                 level_map.del_tile_to_xy(x, y)
                             except KeyError: pass
@@ -399,8 +352,7 @@ class Game:
                     gravity_acc = 0
                     bounce = False
                     down = False
-                    push_down = False
-                if touch_ceiling: bounce = True
+                    mario_move[1] = 0
 
                 if mario.pos[0] <= 0:
                     mario.pos[0] = 0
@@ -442,6 +394,11 @@ class Game:
                         print(f"Kill: {str(entity)} - position:{entity.pos}")
                         del entity_mob["entity"]["move"][i]
                     
+                    mario_real_rect = pygame.Rect(camera_x + mario.pos[0], mario.pos[1], *mario.rect.size)
+                    if entity.rect.colliderect(mario_real_rect):
+                        print(f"Touch: {str(entity)}")
+                        del entity_mob["entity"]["move"][i]
+                    
 
                 ### CAMERA ###
                 if camera_x >= map_size - 768:
@@ -451,10 +408,6 @@ class Game:
                     if not camera_x >= map_size - 768:
                         mario.pos[0] = WINDOW_SIZE[0] / 2 - mario.rect.size[0]
                         camera_x += mario_move[0]
-
-                ### reset ###
-                if not change_direction:
-                    mario_move = [0, 0]
 
                 ### EVENT ###
                 for event in pygame.event.get():
@@ -483,6 +436,9 @@ class Game:
                                 right = True
                             if event.value[0] == -1:
                                 left = True
+                        elif not event.value[1] == 0:
+                            if event.value[1] == -1:
+                                down = True
                         else:
                             if right:
                                 right = False
@@ -505,9 +461,6 @@ class Game:
                             up = True
                         if event.key == pygame.K_s:
                             down = True
-                            if on_block == False and down:
-                                push_down = True
-                                push_down_timer = pygame.time.get_ticks()
                         if event.key == pygame.K_RSHIFT:
                             run = True
                         if event.key == pygame.K_e:
@@ -532,7 +485,7 @@ class Game:
                 if game_over:
                     mario.status[1] = "dead"
                     gravity_acc += GRAVITY
-                    mario.pos[1] += jump + gravity_acc
+                    mario.pos[1] += - jump + gravity_acc
                     if mario.pos[1] >= WINDOW_SIZE[1] + 48:
                         pygame.time.delay(1000)
                         running = False
@@ -795,7 +748,7 @@ class Game:
             
             big_font.render(game_screen, "TIME", (600, 24))
 
-            big_font.render(game_screen, "MARIO", (312, 312))
+            # big_font.render(game_screen, "MARIO", (312, 312))
             big_font.render(game_screen, "GAME OVER", (264, 360))
 
 
@@ -837,7 +790,7 @@ class Game:
 
         credits_text = [
             [("ORIGINAL GAME", 0), ("cNINTENDO   SUPER MARIO BROS.", 3), ("THIS GAME IS A REMAKE VERSION", 12), ("OF SUPER MARIO BROS. 1", 13)], # 원작, 리메이크
-            [("MAKER", 0), ("SEOUN          a SNGYN_P", 3), ("SHINBANPO    PARKHYUNWOO", 5)], # 제작
+            [("MAKER", 0), ("SEOUN          a SNGYN_P", 3), ("SEOUN       a H._JUN0519", 5), ("SHINBANPO    PARKHYUNWOO", 7)], # 제작
             [("RESORCE", 0), ("WEBSITE  SPRITERS-RESORCE.COM", 3), ("REFERENCE", 11), ("YOUTUBE  NENRIKIGAMINGCHANNEL", 14), ("YOUTUBE        DAFLUFFYPOTATO", 16)],
             [("REMAKE WITH PYTHON PYGAME", 7)]  # REMAKE WITH PYTHON
         ]
@@ -887,34 +840,35 @@ class Game:
 
 
     def main(self):
-        self.life = 1
+        self.time = 400
+        self.run_level()
+        # self.life = 1
 
-        # title screen
-        self.title_screen()
+        # # title screen
+        # self.title_screen()
 
-        running = True
-        while running:
-            # level intro
-            self.time = 300
-            self.level_intro()
-            # game start
-            game_clear = self.run_level()
-            if game_clear:
-                self.show_credits()
-                running = False
-            else:
-                self.life -= 1
+        # running = True
+        # while running:
+        #     # level intro
+        #     self.time = 300
+        #     self.level_intro()
+        #     # game start
+        #     game_clear = self.run_level()
+        #     if game_clear:
+        #         self.show_credits()
+        #         running = False
+        #     else:
+        #         self.life -= 1
 
-                if self.time <= 0: # time up
-                    self.time_up()
+        #         if self.time <= 0: # time up
+        #             self.time_up()
 
-                if self.life <= 0: # game over
-                    self.level_intro()
-                    self.game_over()
-                    running = False
+        #         if self.life <= 0: # game over
+        #             self.game_over()
+        #             running = False
 
                 
-        return self.main()
+        # return self.main()
 
 
 if __name__=="__main__":
