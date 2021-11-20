@@ -23,7 +23,6 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install pyinstaller
         python -m pip install pygame
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: build app
       run: |
         pyinstaller -w qtextbrowser_advanced.py
@@ -60,7 +59,6 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install pyinstaller
         python -m pip install pygame
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: build app
       run: |
         pyinstaller -w qtextbrowser_advanced.py
