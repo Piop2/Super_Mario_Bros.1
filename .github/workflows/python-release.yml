@@ -25,7 +25,7 @@ jobs:
         python -m pip install pygame
     - name: build app
       run: |
-        pyinstaller -w qtextbrowser_advanced.py
+        pyinstaller -w Super_Mario_Bros.1.py
     - name: colleting files
       run: |
         mkdir Super_Mario_Bors.1_test
@@ -61,7 +61,7 @@ jobs:
         python -m pip install pygame
     - name: build app
       run: |
-        pyinstaller -w qtextbrowser_advanced.py
+        pyinstaller -w Super_Mario_Bros.1.py
     - name: colleting files
       run: |
         mkdir Super_Mario_Bors.1_test
