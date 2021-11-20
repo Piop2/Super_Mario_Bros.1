@@ -19,7 +19,7 @@ jobs:
         python-version: "3.9"
     - name: Install dependencies
       run: |
-        choco install make nasm zip --no-progress
+        choco install zip
         python -m pip install --upgrade pip
         python -m pip install pyinstaller
         python -m pip install pygame
