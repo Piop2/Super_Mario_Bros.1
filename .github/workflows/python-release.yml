@@ -42,11 +42,11 @@ jobs:
     - name: Upload to Release
       if: github.event_name == 'release'
       uses: svenstaro/upload-release-action@e74ff71f7d8a4c4745b560a485cc5fdb9b5b999d
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: Super_Mario_Bors.1_test_for_windows.zip
-          tag: ${{ github.ref }}
-          asset_name: Super_Mario_Bors.1_$tag_for_Windows.zip
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: Super_Mario_Bors.1_test_for_windows.zip
+        tag: ${{ github.ref }}
+        asset_name: Super_Mario_Bors.1_$tag_for_Windows.zip
   build-ubuntu:
     runs-on: ubuntu-latest
     steps:
@@ -79,8 +79,8 @@ jobs:
     - name: Upload to Release
       if: github.event_name == 'release'
       uses: svenstaro/upload-release-action@e74ff71f7d8a4c4745b560a485cc5fdb9b5b999d
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: Super_Mario_Bors.1_test_for_macOS_and_linux.zip
-          tag: ${{ github.ref }}
-          asset_name: Super_Mario_Bors.1_$tag_for_macOS_and_linux.zip
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: Super_Mario_Bors.1_test_for_macOS_and_linux.zip
+        tag: ${{ github.ref }}
+        asset_name: Super_Mario_Bors.1_$tag_for_macOS_and_linux.zip
