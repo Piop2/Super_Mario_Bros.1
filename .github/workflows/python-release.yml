@@ -65,7 +65,7 @@ jobs:
     - name: colleting files
       run: |
         mkdir Super_Mario_Bors.1_test
-        mv dist/Super_Mario_Bros.1.exe Super_Mario_Bors.1_test
+        mv dist/Super_Mario_Bros.1 Super_Mario_Bors.1_test
         mv data Super_Mario_Bors.1_test
         mv scripts Super_Mario_Bors.1_test
         zip -r Super_Mario_Bors.1_test_for_macOS_and_linux.zip Super_Mario_Bors.1_test/*
