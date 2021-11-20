@@ -42,6 +42,18 @@ class Entity:
     def render(self, surf, camera_x):
         return
 
+class Coin(Entity):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.ani = {}
+        self.__entity_name = "coin"
+    
+    def __str__(self):
+        return self.__entity_name
+    
+    def render(self, surf, camera_x):
+        surf.blit(self.img, (self.pos[0] - camera_x, self.pos[1]))
+        return
 
 class Mushroom_RED(Entity):
     def __init__(self, x, y):

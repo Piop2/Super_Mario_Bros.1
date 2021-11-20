@@ -41,6 +41,9 @@ class Level:
 
     def get_start_data(self):
         return self.maps[self.map_name].camera_x, self.maps[self.map_name].map_size, self.maps[self.map_name].start_at, self.maps[self.map_name].map_type
+    
+    def get_entity_mob(self):
+        return self.maps[self.map_name].entity_mob
 
     def play_box(self, dt):
         self.maps[self.map_name].play_box(dt)
@@ -83,7 +86,7 @@ class Map:
         self.box_ani.play(dt)
 
     def set_offset(self, x, y, camera_x, offset):
-        tile, x, y = self.find_block(int((x + camera_x) / 48), int(y / 48))
+        tile, x, y = self.find_block(round((x + camera_x) / 48), int(y / 48))
         if len(tile) >= 3:
             tile[2] = offset
         else:
@@ -126,6 +129,10 @@ class Map:
     @property
     def map_size(self):
         return self.map_data["mapSize"]
+    
+    @property
+    def entity_mob(self):
+        return self.map_data["entityMob"]
 
     def get_rects(self, camera_x, pos):
         rects = []

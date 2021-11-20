@@ -13,7 +13,7 @@ class Mario:
                 "jump": load_img("data/images/character/small_jump/img.png"),
                 "walk": Animation(*load_animation("data/images/character/small_walk")),
                 "run": Animation(*load_animation("data/images/character/small_walk"), speed=2),
-                "change_direction": load_img("data/images/character/small_change_direction/img.png"),
+                "turn": load_img("data/images/character/small_change_direction/img.png"),
                 "dead": load_img("data/images/character/small_dead/img.png"),
                 "push_wait": load_img("data/images/character/small_push_wait/img.png"),
                 "push_down": load_img("data/images/character/small_push_down/img.png")

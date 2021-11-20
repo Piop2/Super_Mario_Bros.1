@@ -125,6 +125,8 @@ class Game:
         right = False
         left = False
         run = False
+
+        
         
         JUMP = 17
         gravity_acc = 0
@@ -210,16 +212,16 @@ class Game:
                 gravity_acc += GRAVITY
 
                 ## MARIO CONTRAL ###
-                if on_block:
+                if on_block or - jump + gravity_acc < 0:
                     if right:
-                        if mario_move[0] < -2:
+                        if on_block and mario_move[0] < -2:
                             mario_move[0] += 0.05
                         elif run:
                             mario_move[0] = mario_move[0] + 1 if mario_move[0] <= RUN_SPEED else RUN_SPEED
                         else:
                             mario_move[0] = mario_move[0] + 1 if mario_move[0] <= WALK_SPEED else WALK_SPEED
                     if left:
-                        if mario_move[0] > 2:
+                        if on_block and mario_move[0] > 2:
                             mario_move[0] -= 0.05
                         elif run:
                             mario_move[0] = mario_move[0] - 1 if - mario_move[0] <= RUN_SPEED else - RUN_SPEED
@@ -228,7 +230,6 @@ class Game:
 
                 if up and (on_block or jump):
                     jump = jump + 3  if jump + 3 < JUMP else JUMP
-                    # jump = JUMP
                 
 
                 if not jump and right == False and left == False and up == False:
@@ -237,6 +238,7 @@ class Game:
                     if abs(mario_move[0]) > 0:
                         mario_move[0] += -0.4 if mario_move[0] > 0 else +0.4
 
+                mario_move[0] = 0 if not on_block and mario.direction * mario_move[0] < 0 else mario_move[0]
 
                 ### MARIO STATUS ###
                 if ((left and mario_move[0] > 2) or (right and mario_move[0] < - 2)) and not (right and left):
@@ -258,14 +260,14 @@ class Game:
                 if not on_block:
                     mario.status[1] = "jump"
 
-                
+
 
 
                 if mario.pos[1] >= WINDOW_SIZE[1]:
                     pause = True
                     game_over = True
                     gravity_acc = 0
-                    jump = - 20
+                    jump = 20
                     steel_up = False
                     pygame.time.delay(1000)
                 mario.play_ani(dt)
@@ -351,6 +353,7 @@ class Game:
                     jump = 0
                     gravity_acc = 0
                     bounce = False
+                    up = False
                     down = False
                     mario_move[1] = 0
 
@@ -424,9 +427,6 @@ class Game:
                     if event.type == pygame.JOYBUTTONUP:
                         if event.button == 0 or event.button == 3:
                             up = False
-                            if steel_up:
-                                jump += 5
-                            steel_up = False
                         if event.button == 1 or event.button == 2:
                             run = False
 
@@ -547,10 +547,7 @@ class Game:
 
 
             big_font.render(game_screen, "1 PLAYER GAME", (264, 408))
-            if select_num == 1:
-                big_font.render(game_screen, "a SNGYN_P", (264, 456))
-            else:
-                big_font.render(game_screen, "2 PLAYER GAME", (264, 456))
+            big_font.render(game_screen, "2 PLAYER GAME", (264, 456))
             big_font.render(game_screen, "TOP - {0:06d}".format(self.best_score), (288, 528))
 
             colored_big_font.render(game_screen, colored_text, (120 + title.get_width() - colored_big_font.width(colored_text), 336))
@@ -843,10 +840,10 @@ class Game:
         self.time = 400
         self.run_level()
         # self.life = 1
-
+        #
         # # title screen
         # self.title_screen()
-
+        #
         # running = True
         # while running:
         #     # level intro
@@ -859,15 +856,15 @@ class Game:
         #         running = False
         #     else:
         #         self.life -= 1
-
+        #
         #         if self.time <= 0: # time up
         #             self.time_up()
-
+        #
         #         if self.life <= 0: # game over
         #             self.game_over()
         #             running = False
-
-                
+        #
+        #
         # return self.main()
 
 
