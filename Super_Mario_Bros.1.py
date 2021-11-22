@@ -8,6 +8,7 @@ from scripts.tile import *
 from scripts.map_loader import *
 from scripts.player import *
 from scripts.entity import *
+from scripts.mob import *
 
 pygame.init()
 pygame.joystick.init()
@@ -113,10 +114,14 @@ class Game:
 
 
         entity_mob = {"entity": {"summon": [], "move": []}, "mob": []}
-        # for en_m_pos, en_m_type in level_map.get_entity_mob():
-        #     en_m_pos = tuple(map(int, en_m_pos.split(".")))
-        #     if
-        #  
+        for en_m_pos, en_m_type in level_map.get_entity_mob().items():
+            en_m_pos = tuple(map(int, en_m_pos.split(".")))
+            if en_m_type == "mushroom_mob":
+                entity_mob["mob"].append(Mushroom_mob(*tuple(map(lambda x:x * 3, en_m_pos))))
+            else:
+                raise ValueError(f"{en_m_pos} {en_m_type}")
+
+
             
         ### mario ###
         up = False
@@ -387,7 +392,7 @@ class Game:
                     rect, (_, _), (touch_down, _), (touch_r, _), (touch_l, _) = move(entity.rect, entity_move, entity_blocks_rect)
                     if touch_r or touch_l:
                         entity.turn_direction()
-                    
+
                     if touch_down:
                         entity.acc_y = 0
                     
@@ -401,6 +406,11 @@ class Game:
                     if entity.rect.colliderect(mario_real_rect):
                         print(f"Touch: {str(entity)}")
                         del entity_mob["entity"]["move"][i]
+
+                # for i, mob in enumerate(entity_mob["mob"]):
+                #     mob.play_ani(dt)
+                #     if
+
                     
 
                 ### CAMERA ###
@@ -483,6 +493,7 @@ class Game:
 
             else:
                 if game_over:
+                    mario.status[0] = "defalt"
                     mario.status[1] = "dead"
                     gravity_acc += GRAVITY
                     mario.pos[1] += - jump + gravity_acc

@@ -22,5 +22,5 @@
       "197.3": [0, 78, [24, 3]]
     }
   ],
-  "entityMob": {}
+  "entityMob": {"0.0": "mushroom_mob"}
 }

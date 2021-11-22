@@ -7,6 +7,10 @@ class Mario:
     def __init__(self):
         self.ani = {
             "big": {
+                "idle": load_img("data/images/character/big_idle/img.png"),
+                "walk": Animation(*load_animation("data/images/character/big_walk")),
+                "run": Animation(*load_animation("data/images/character/big_walk"), speed=2),
+                "jump": load_img("data/images/character/big_jump/img.png")
             },
             "small": {
                 "idle": load_img("data/images/character/small_idle/img.png"),
@@ -14,9 +18,11 @@ class Mario:
                 "walk": Animation(*load_animation("data/images/character/small_walk")),
                 "run": Animation(*load_animation("data/images/character/small_walk"), speed=2),
                 "turn": load_img("data/images/character/small_change_direction/img.png"),
-                "dead": load_img("data/images/character/small_dead/img.png"),
                 "push_wait": load_img("data/images/character/small_push_wait/img.png"),
                 "push_down": load_img("data/images/character/small_push_down/img.png")
+            },
+            "defalt": {
+                "dead": load_img("data/images/character/dead/img.png")
             }
         }
 

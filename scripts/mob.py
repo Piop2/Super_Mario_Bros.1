@@ -10,9 +10,6 @@ class Mob:
         self.direction = -1
         self.speed = 0
     
-    def __str__(self):
-        return "Mob"
-    
     def turn_direction(self):
         self.direction *= -1
         return
@@ -43,4 +40,9 @@ class Mushroom_mob(Mob):
         }
         self.status = "walk"
         self.speed = 3
-    
+
+    def play_ani(self, dt):
+        try:
+            self.ani[self.status].play(dt)
+        except: pass
+        return
