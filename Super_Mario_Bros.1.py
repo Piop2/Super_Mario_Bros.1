@@ -848,35 +848,31 @@ class Game:
 
 
     def main(self):
-        self.time = 400
-        self.run_level()
-        # self.life = 1
-        #
-        # # title screen
-        # self.title_screen()
-        #
-        # running = True
-        # while running:
-        #     # level intro
-        #     self.time = 300
-        #     self.level_intro()
-        #     # game start
-        #     game_clear = self.run_level()
-        #     if game_clear:
-        #         self.show_credits()
-        #         running = False
-        #     else:
-        #         self.life -= 1
-        #
-        #         if self.time <= 0: # time up
-        #             self.time_up()
-        #
-        #         if self.life <= 0: # game over
-        #             self.game_over()
-        #             running = False
-        #
-        #
-        # return self.main()
+        # title screen
+        self.title_screen()
+        
+        running = True
+        while running:
+            # level intro
+            self.time = 300
+            self.level_intro()
+            # game start
+            game_clear = self.run_level()
+            if game_clear:
+                self.show_credits()
+                running = False
+            else:
+                self.life -= 1
+        
+                if self.time <= 0: # time up
+                    self.time_up()
+        
+                if self.life <= 0: # game over
+                    self.game_over()
+                    running = False
+    
+        
+        return self.main()
 
 
 if __name__=="__main__":
