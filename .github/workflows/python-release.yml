@@ -12,9 +12,9 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python 3.9
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
         python-version: "3.9"
     - name: Install dependencies
@@ -34,7 +34,7 @@ jobs:
         mv scripts Super_Mario_Bors.1_test
         zip -r Super_Mario_Bors.1_test_for_windows.zip Super_Mario_Bors.1_test/*
     - name: Upload to Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Super_Mario_Bors.1_windows_build
         path: Super_Mario_Bors.1_test_for_windows.zip
@@ -49,9 +49,9 @@ jobs:
   build-ubuntu:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python 3.9
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
         python-version: "3.9"
     - name: Install dependencies
@@ -70,7 +70,7 @@ jobs:
         mv scripts Super_Mario_Bors.1_test
         zip -r Super_Mario_Bors.1_test_for_linux.zip Super_Mario_Bors.1_test/*
     - name: Upload to Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Super_Mario_Bors.1_ubuntu_build
         path: Super_Mario_Bors.1_test_for_linux.zip
@@ -85,9 +85,9 @@ jobs:
   build-macOS:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python 3.9
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
         python-version: "3.9"
     - name: Install dependencies
@@ -106,7 +106,7 @@ jobs:
         mv scripts Super_Mario_Bors.1_test
         zip -r Super_Mario_Bors.1_test_for_macOS.zip Super_Mario_Bors.1_test/*
     - name: Upload to Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Super_Mario_Bors.1_macOS_build
         path: Super_Mario_Bors.1_test_for_macOS.zip
